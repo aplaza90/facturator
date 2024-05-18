@@ -1,0 +1,7 @@
+setup.py
+facturator/__init__.py
+facturator/config.py
+facturator.egg-info/PKG-INFO
+facturator.egg-info/SOURCES.txt
+facturator.egg-info/dependency_links.txt
+facturator.egg-info/top_level.txt
