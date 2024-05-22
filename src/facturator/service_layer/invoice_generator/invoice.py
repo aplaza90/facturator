@@ -45,7 +45,8 @@ template = template_env.get_template(html_template)
 output_pdf = os.path.join(base_dir, 'invoice.pdf')
 
 
-def create_pdf(context, pdf_path=output_pdf, css_path=css_path):
+def create_pdf(context, css_path=css_path):
+    pdf_path = os.path.join(base_dir, f'{context["client_name"]}_{context["invoice_date"]}.pdf')
     config = pdfkit.configuration(wkhtmltopdf='/usr/bin/wkhtmltopdf')
     options = {
         'enable-local-file-access': '',

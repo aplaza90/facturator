@@ -83,8 +83,8 @@ def get_order_context():
         context = handlers.get_order_context(uow=uow, order_number=order_number)
 
         # Path where the PDF will be generated
-        pdf_dir = file_path = Path(__file__).resolve().parent.parent / 'service_layer' / 'invoice_generator'
-        pdf_filename = 'invoice.pdf'
+        pdf_dir = Path(__file__).resolve().parent.parent / 'service_layer' / 'invoice_generator'
+        pdf_filename = f'{context["client_name"]}_{context["invoice_date"]}.pdf'
         pdf_path = os.path.join(pdf_dir, pdf_filename)
 
         invoice.create_pdf(context)
