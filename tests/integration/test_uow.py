@@ -86,7 +86,7 @@ def test_uow_can_allocate_payer_into_order(session_factory):
         order = model.InvoiceOrder(
             payer_name='pep',
             date=datetime(2022, 1, 1).date(),
-            quantity=10,
+            quantity=100,
         )
         order_code_gen = handlers.get_invoice_code_generator(
             fixed_part='INV',

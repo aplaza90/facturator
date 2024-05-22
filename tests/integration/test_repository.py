@@ -1,12 +1,19 @@
 # pylint: disable=protected-access
+from sqlalchemy import text
+from datetime import date
+
 from facturator.domain import model
 from facturator.adapters import repository
 from facturator.adapters.repository_entity_implementation import OrderImplementation, PayerImplementation
-from sqlalchemy import text
 
 
 def test_save_order(in_memory_session):
-    order = model.InvoiceOrder("order1")
+    order =model.InvoiceOrder(
+        "order1",
+        date=date(2024, 5, 1),
+        quantity=200,
+        number="B456"
+    )
     order_repo = repository.SqlAlchemyRepository(
         in_memory_session,
         OrderImplementation()

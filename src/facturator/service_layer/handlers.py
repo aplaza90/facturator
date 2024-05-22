@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 from facturator.domain import model, commands, events
 from facturator.service_layer import file_handler, unit_of_work
+from facturator.service_layer.invoice_generator import invoice
 
 if TYPE_CHECKING:
     from facturator.service_layer import unit_of_work
@@ -126,6 +127,13 @@ def get_orders(uow):
             return orders
 
         return [{'no': 'data'}]
+
+
+def get_order_context(uow, order_number):
+    with uow:
+        order = uow.orders.get(order_number)
+        order_context = invoice.generate_context(order)
+        return order_context
 
 
 def send_repeated_payer_notification(

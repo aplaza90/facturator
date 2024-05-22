@@ -1,4 +1,7 @@
-from flask import Flask, request, render_template, jsonify
+import os
+from pathlib import Path
+from flask import Flask, request, render_template, jsonify, send_file, after_this_request
+from flask_cors import CORS
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -6,6 +9,7 @@ from facturator import config
 from facturator.adapters import orm
 from facturator.service_layer import handlers
 from facturator.service_layer import unit_of_work, messagebus
+from facturator.service_layer.invoice_generator import invoice
 from facturator.domain import commands
 
 orm.start_mappers()
@@ -14,10 +18,7 @@ orm.metadata.create_all(engine)
 get_session = sessionmaker(bind=engine)
 app = Flask(__name__, template_folder='templates')
 
-
-@app.route('/test')
-def test():
-    return 'Flask application is running!'
+CORS(app)
 
 
 @app.route("/add_payer", methods=['GET', 'POST'])
@@ -74,4 +75,32 @@ def get_orders():
     return jsonify(orders), 200
 
 
+@app.route("/get_context", methods=['GET', 'POST'])
+def get_order_context():
+    if request.method == 'POST':
+        order_number = request.json["order_number"]
+        uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
+        context = handlers.get_order_context(uow=uow, order_number=order_number)
 
+        # Path where the PDF will be generated
+        pdf_dir = file_path = Path(__file__).resolve().parent.parent / 'service_layer' / 'invoice_generator'
+        pdf_filename = 'invoice.pdf'
+        pdf_path = os.path.join(pdf_dir, pdf_filename)
+
+        invoice.create_pdf(context)
+
+        @after_this_request
+        def remove_file(response):
+            try:
+                os.remove(pdf_path)
+            except Exception as error:
+                app.logger.error(f"Error removing or closing downloaded file handle: {error}")
+            return response
+
+        return send_file(pdf_path, as_attachment=True, download_name=pdf_filename, mimetype='application/pdf')
+
+    return render_template("get_pdf.html")
+
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=8080, debug=True)

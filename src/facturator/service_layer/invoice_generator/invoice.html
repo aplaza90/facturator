@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+</head>
+
+<body>
+    <div class="invoice-container">
+        <div class="logo-container">
+            <img src=" {{logo_path}} " />
+        </div>
+        <div class="invoice-info-container">
+            <div class="invoice-title">FACTURA</div>
+            <table class="invoice-info">
+                <tbody>
+                    <tr>
+                        <td>{{invoice_number}}</td>
+                        <td>{{invoice_date}}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="invoice-rectangle"></div>
+        </div>
+        <table class="payer-info">
+            <tbody>
+                <tr>
+                    <td class="client-name">{{client_name}}</td>
+                </tr>
+                <tr>
+                    <td>{{client_address}}</td>
+                </tr>
+                <tr>
+                    <td>{{client_city}}</td>
+                </tr>
+                <tr>
+                    <td>{{client_nif}}</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="professional-info-container">
+            <table class="professional-info">
+            <tbody>
+                <tr>
+                    <td>{{professional_name}}</td>
+                </tr>
+                <tr>
+                    <td>{{professional_address}}</td>
+                </tr>
+                <tr>
+                    <td>{{professional_city}}</td>
+                </tr>
+                <tr>
+                    <td>{{professional_nif}}</td>
+                </tr>
+
+            </tbody>
+        </table>
+        </div>
+        <table class="line-items-container">
+            <thead>
+                <tr>
+                    <th class="heading-description">DESCRIPCION</th>
+                    <th class="heading-units">UNIDADES</th>
+                    <th class="heading-unit-price">PRECIO UNIDAD</th>
+                    <th class="heading-subtotal">SUBTOTAL</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order_lines %}
+                    <tr>
+                        <td>SESIONES</td>
+                        <td>{{ item.units }}</td>
+                        <td>{{ item.price }}</td>
+                        <td>{{ item.subtotal }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <table class="taxes-container">
+            <tbody>
+                <tr>
+                    <td colspan="2" class="tax-base">BASE IMPONIBLE</td>
+                    <td class="tax-total">{{total_bi}}</td>
+                </tr>
+                <tr>
+                    <td class="tax-concept">DESCUENTO (%)</td>
+                    <td class="tax-perc">0,0%</td>
+                    <td class="tax-total-tax">{{discount_qty}}</td>
+                </tr>
+                <tr>
+                    <td class="tax-concept">* IVA (%)</td>
+                    <td class="tax-perc">0,0%</td>
+                    <td class="tax-total-tax">{{iva_qty}}</td>
+                </tr>
+                <tr>
+                    <td class="tax-concept">** IRPF (%)</td>
+                    <td class="tax-perc">0,0%</td>
+                    <td class="tax-total-tax">{{irpf_qty}}</td>
+                </tr>
+            </tbody>
+        </table>
+        <table class="total-invoice">
+            <tbody>
+                <tr>
+                    <td class="total-title">TOTAL</td>
+                    <td class="total-quantity">{{Total_a_pagar}}</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="centered-sentence">*Artículo 20.Uno de la Ley del Impuesto sobre el Valor Añadido</div>
+        <div class="legal-notice">
+            De acuerdo con lo establecido por la Ley Orgánica 15/1999, de 13 de diciembre, de Protección de
+            Datos de Carácter Personal, le informamos que sus datos serán incluidos en un fichero del que es titular
+            {{professional_name}} y podrán ser utilizados para prestarle el servicio solicitado, la gestión fiscal,
+            contable y administrativa del mismo. Le informamos además que podrá
+            ejercitar sus derechos de acceso, rectificación, cancelación y oposición en el correo electrónico
+            {{professional_email}}
+        </div>
+    </div>
+</body>
+</html>

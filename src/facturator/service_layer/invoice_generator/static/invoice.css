@@ -1,0 +1,218 @@
+/*
+  Common invoice styles. These styles will work in a browser or using the HTML
+  to PDF anvil endpoint.
+*/
+.invoice-container {
+  margin: 50px auto; /* Adjust the value as needed */
+  width: 80%; /* Center the invoice and adjust width */
+}
+
+body {
+  font-size: 16px;
+  font-family: Arial, sans-serif;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table tr td {
+  padding: 10px;
+  border: 1px solid #ddd; /* Add border for better visual separation */
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.right {
+  text-align: right;
+}
+
+.large {
+  font-size: 1.75em;
+}
+
+.total {
+  font-weight: bold;
+  color: #fb7578;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px; /* Space between header and the rest of the content */
+}
+
+.logo-container {
+  width: 40%; /* Adjust width as needed */
+  text-align: left;
+}
+
+.logo-container img {
+  height: 100px; /* Adjust height as needed */
+  width: auto; /* Maintain aspect ratio */
+}
+
+.invoice-info-container {
+  width: 55%; /* Adjust width as needed */
+  text-align: center;
+  float: right;
+  margin-top: -50px;
+}
+
+.invoice-title {
+  font-weight: bold;
+  background-color: #98b1a2;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 1.5em;
+  margin-bottom: 10px; /* Space below title */
+}
+
+.invoice-info {
+  width: 100%;
+}
+
+.invoice-info td {
+  text-align: left;
+}
+
+.invoice-rectangle {
+  background-color: #98b1a2;
+  height: 30px;
+  margin-top: 10px;
+}
+
+.payer-info,
+.professional-info {
+  border-collapse: collapse;
+  width: 48%;
+}
+
+.payer-info {
+  float: left;
+  margin-top: 200px
+}
+
+.payer-info td {
+  border:none;
+}
+
+.professional-info {
+  float: right;
+}
+
+.professional-info td {
+  text-align: right;
+  border: none;
+}
+
+.client-name {
+  vertical-align: top;
+}
+
+.line-items-container {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 30px 0;
+  font-size: 0.875em;
+}
+
+.line-items-container th {
+  text-align: center;
+  background-color: #98b1a2;
+  color: white;
+  border-bottom: 2px solid #ddd;
+  padding: 10px;
+  font-size: 0.75em;
+  text-transform: uppercase;
+}
+
+.line-items-container td {
+  border:none;
+  padding: 10px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.taxes-container,
+.total-invoice {
+  width: 50%;
+  margin-top: 20px;
+  border-collapse: collapse;
+  font-size: 0.875em;
+  float: right;
+}
+
+.taxes-container td,
+.total-invoice td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+}
+
+.tax-base {
+  width: 50%;
+}
+
+.tax-total {
+  width: 25%;
+  text-align: right;
+}
+
+.total-invoice {
+  width: 50%; /* Same width as taxes-container */
+  margin-top: 20px; /* Space between taxes-container and total-invoice */
+  border-collapse: collapse;
+  font-size: 0.875em;
+  clear: both; /* Ensure it is below the floated elements */
+}
+
+.total-invoice td {
+  padding: 10px; /* Padding for table cells */
+  text-align: left; /* Default text alignment */
+}
+
+.total-title {
+  background-color: #98b1a2;
+  color: white;
+  font-weight: bold;
+  text-align: left;
+}
+
+.total-quantity {
+  width: 25%;
+  text-align: right;
+}
+
+.centered-sentence {
+  text-align: center;
+  font-weight: bold;
+  margin-top: 410px;
+  clear: both;
+  font-size: 0.75em;
+}
+
+.legal-notice {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.875em;
+  line-height: 1.5;
+  width: 80%;
+  margin: 20px auto;
+}
+
+.payment-info {
+  width: 38%;
+  font-size: 0.75em;
+  line-height: 1.5;
+}
+
+.page-container {
+  display: flex;
+  justify-content: center;
+}

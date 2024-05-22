@@ -17,7 +17,7 @@ class OrderImplementation(EntityImplementation):
         return model.InvoiceOrder
 
     def get_filter_parameter(self) -> str:
-        return "payer_name"
+        return "number"
 
 
 class PayerImplementation(EntityImplementation):

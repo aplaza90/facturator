@@ -89,8 +89,8 @@ def test_saving_address_allocations(in_memory_session):
 def test_retrieving_orders(in_memory_session):
     query = text(
         "INSERT INTO orders (payer_name, date, quantity, number) VALUES "
-        '("order1", "2024-04-30", 1.5, "A123"),'
-        '("order2", "2024-05-01", 2.0, "B456")'
+        '("order1", "2024-04-30", 150, "A123"),'
+        '("order2", "2024-05-01", 200, "B456")'
     )
 
     in_memory_session.execute(query)
@@ -98,13 +98,13 @@ def test_retrieving_orders(in_memory_session):
         model.InvoiceOrder(
             "order1",
             date=date(2024, 4, 30),
-            quantity=1.5,
+            quantity=150,
             number="A123"
         ),
         model.InvoiceOrder(
             "order2",
             date=date(2024, 5, 1),
-            quantity=2.0,
+            quantity=200,
             number="B456"
         )
     ]
@@ -112,7 +112,12 @@ def test_retrieving_orders(in_memory_session):
 
 
 def test_saving_orders(in_memory_session):
-    new_order = model.InvoiceOrder("order1")
+    new_order = model.InvoiceOrder(
+        "order1",
+        date=date(2024, 5, 1),
+        quantity=200,
+        number="B456"
+    )
     in_memory_session.add(new_order)
     in_memory_session.commit()
 
@@ -122,7 +127,12 @@ def test_saving_orders(in_memory_session):
 
 
 def test_saving_allocations(in_memory_session):
-    order = model.InvoiceOrder("order1")
+    order = model.InvoiceOrder(
+        "order1",
+        date=date(2024, 5, 1),
+        quantity=200,
+        number="B456"
+    )
     payer = model.Payer("payer1")
     order.allocate_payer(payer)
     in_memory_session.add(order)

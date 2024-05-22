@@ -67,11 +67,11 @@ def test_add_order():
     cmd = commands.AddOrder(
         payer_name="Luis Sarmiento",
         date=datetime.date(2024, 4, 30),
-        quantity=1.5,
+        quantity=150,
         number="A123"
     )
     handlers.add_order(uow, cmd)
-    assert uow.orders.get("Luis Sarmiento") is not None
+    assert uow.orders.get("A123") is not None
     assert uow.committed
 
 
@@ -114,12 +114,11 @@ def test_associate_payer():
         InvoiceOrder(
             "Luis Sarmiento",
             date=datetime.date(2024, 4, 30),
-            quantity=120,
+            quantity=240,
         )
     ]
     for order in orders:
         handlers.associate_payer_to_order(order, sample_payers)
-
     assert orders[0]._payer == sample_payers[3]
     assert orders[1]._payer == sample_payers[0]
 

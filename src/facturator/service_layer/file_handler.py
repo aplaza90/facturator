@@ -95,7 +95,6 @@ class ExcelFileHandler(AbstractFileHandler):
                 payer_name=index,
                 date=row['Latest Date'],
                 quantity=row['Total Amount'],
-                number=None
             )
             invoice_orders.append(invoice_order)
         return invoice_orders
