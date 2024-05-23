@@ -13,16 +13,12 @@
         <button type="submit">Submit</button>
     </form>
     <script>
-        document.getElementById('orderForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent the form from submitting normally
+         document.getElementById('orderForm').addEventListener('submit', function(event) {
+            event.preventDefault();
 
-            // Get the order number from the form
             const orderNumber = document.getElementById('order_number').value;
-
-            // Create the JSON payload
             const jsonData = { order_number: orderNumber };
 
-            // Send data to server
             fetch('http://localhost:5005/get_context', {
                 method: 'POST',
                 headers: {
@@ -34,21 +30,29 @@
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
-                return response.blob(); // Get the response as a blob
-            })
-            .then(blob => {
-                // Create a link element, set the href to the blob URL, and click it to trigger download
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'invoice.pdf'; // Name the downloaded file
-                document.body.appendChild(a); // Append the link to the document body
-                a.click(); // Simulate a click to trigger the download
-                a.remove(); // Remove the link element from the document
-                window.URL.revokeObjectURL(url); // Revoke the object URL
+
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let filename = 'response.pdf'; // Default filename
+
+                if (contentDisposition && contentDisposition.includes('attachment')) {
+                    const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(contentDisposition);
+                    if (matches != null && matches[1]) {
+                        filename = matches[1].replace(/['"]/g, '');
+                    }
+                }
+
+                return response.blob().then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename; // Use the extracted filename
+                    document.body.appendChild(a); // Append the link to the document body
+                    a.click(); // Simulate a click to trigger the download
+                    a.remove(); // Remove the link element from the document
+                    window.URL.revokeObjectURL(url); // Revoke the object URL
+                });
             })
             .catch(error => {
-                // Handle error
                 console.error('There was a problem with the request:', error);
             });
         });
