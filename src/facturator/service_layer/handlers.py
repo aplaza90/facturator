@@ -116,7 +116,16 @@ def get_payers(uow):
             return payers
 
         return [{'no': 'data'}]
-
+    
+def get_payer(uow, name):
+    with uow:
+        query = text("SELECT * FROM payers WHERE name = :name") 
+        rows = uow.session.execute(query, {'name': name}).all()
+        if rows:
+            payers = [row._asdict() for row in rows]
+            return payers      
+        
+        return [{'no': 'data'}]
 
 def get_orders(uow):
     with uow:
@@ -127,6 +136,16 @@ def get_orders(uow):
             return orders
 
         return [{'no': 'data'}]
+    
+def get_order(uow, number):
+    with uow:
+        query = text("SELECT * FROM orders WHERE number = :number") 
+        rows = uow.session.execute(query, {'number': number}).all()
+        if rows:
+            orders = [row._asdict() for row in rows]
+            return orders      
+    
+    return [{'no': 'data'}]
 
 
 def get_order_context(uow, order_number):

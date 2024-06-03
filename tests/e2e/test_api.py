@@ -9,7 +9,7 @@ def test_store_orders():
     files = {'file': open(file_path, 'rb')}
 
     url = config.get_api_url()
-    response = requests.post(f"{url}/upload_payment", files=files)
+    response = requests.post(f"{url}/order", files=files)
     assert response.status_code == 201
 
 
@@ -23,5 +23,5 @@ def test_add_payer():
         "city": "Example City",
         "province": "Example Province"
     }
-    response = requests.post(f"{url}/add_payer", json=json_data)
+    response = requests.post(f"{url}/payer", json=json_data)
     assert response.status_code == 201
