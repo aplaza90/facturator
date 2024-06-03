@@ -10,8 +10,8 @@ if TYPE_CHECKING:
 
 
 def add_order(
-        uow,
-        cmd: commands.AddOrder = None,
+        cmd: commands.AddOrder,
+        uow,  
 ) -> None:
     with uow:
 
@@ -47,6 +47,32 @@ def add_payer(
             nif=cmd.nif
         ))
         uow.commit()
+
+def update_payer(uow, cmd):
+    with uow:
+        payer = uow.payers.get_by_id(cmd.id) 
+        payer.name = cmd.name if cmd.name else payer.name  
+        payer.nif = cmd.nif if cmd.nif else payer.nif
+        payer.address.address = cmd.address if cmd.address else payer.address.address
+        payer.address.zip_code = cmd.zip_code if cmd.zip_code else payer.address.zip_code
+        payer.address.city = cmd.city if cmd.city else payer.address.city
+        payer.address.province = cmd.province if cmd.province else payer.address.province
+        uow.commit()
+
+def delete_payer(uow, cmd):
+    with uow:
+        payer = uow.payers.get_by_id(cmd.id)
+        address_id = payer.address
+
+        query_payers = text("DELETE FROM payers WHERE id = :payer_id")
+        query_addresses = text("DELETE FROM addresses WHERE id = :address_id")
+
+        uow.session.execute(query_payers, dict(payer_id = cmd.id))
+        
+
+        uow.session.commit()
+
+
 
 
 def get_payer_from_name(name, payers):
@@ -117,15 +143,16 @@ def get_payers(uow):
 
         return [{'no': 'data'}]
     
-def get_payer(uow, name):
+def get_payer(uow, id):
     with uow:
-        query = text("SELECT * FROM payers WHERE name = :name") 
-        rows = uow.session.execute(query, {'name': name}).all()
+        query = text("SELECT * FROM payers WHERE id = :id") 
+        rows = uow.session.execute(query, {'id': id}).all()
         if rows:
             payers = [row._asdict() for row in rows]
             return payers      
         
-        return [{'no': 'data'}]
+        return [{'no': 'data'}] 
+
 
 def get_orders(uow):
     with uow:

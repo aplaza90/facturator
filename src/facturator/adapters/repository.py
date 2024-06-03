@@ -14,6 +14,10 @@ class AbstractRepository(ABC):
     def get(self, name: str) -> model.InvoiceOrder:
         raise NotImplementedError
 
+    @abstractmethod
+    def get_by_id(self, id: int) -> model.InvoiceOrder:
+        raise NotImplementedError
+
 
 class SqlAlchemyRepository(AbstractRepository):
     def __init__(self, session, entity_implementation: EntityImplementation):
@@ -28,6 +32,11 @@ class SqlAlchemyRepository(AbstractRepository):
         return self.session.query(
             self.entity_implementation.get_entity_class()
         ).filter_by(**filter_by).one()
+
+    def get_by_id(self, id: int):
+        return self.session.query(
+            self.entity_implementation.get_entity_class()
+        ).get(id)
 
     def list_all(self):
         return self.session.query(

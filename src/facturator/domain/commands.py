@@ -16,11 +16,24 @@ class AddPayer(Command):
     city: str
     province: str
 
+@dataclass
+class UpdatePayer(Command):
+    id: int
+    name: str = None
+    nif: str = None
+    address: str = None
+    zip_code: str = None
+    city: str = None
+    province: str = None   
+
+@dataclass
+class DeletePayer(Command):
+    id: int     
 
 @dataclass
 class AddOrder(Command):
     payer_name: str
-    date: datetime.date
+    date: str
     quantity: float
     number: str
 

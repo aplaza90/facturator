@@ -20,6 +20,9 @@ class FakeRepository(repository.AbstractRepository):
     def get(self, value):
         param = self.entity_implementation.get_filter_parameter()
         return next(b for b in self._entities if getattr(b, param) == value)
+    
+    def get_by_id(self, id):
+        pass
 
     def list_all(self):
         return list(self._entities)
@@ -66,11 +69,11 @@ def test_add_order():
     uow = FakeUnitOfWork()
     cmd = commands.AddOrder(
         payer_name="Luis Sarmiento",
-        date=datetime.date(2024, 4, 30),
+        date="2024-04-30",
         quantity=150,
         number="A123"
     )
-    handlers.add_order(uow, cmd)
+    handlers.add_order(cmd, uow)
     assert uow.orders.get("A123") is not None
     assert uow.committed
 
