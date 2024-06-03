@@ -65,6 +65,7 @@ EVENT_HANDLERS = {
 
 COMMAND_HANDLERS = {
     commands.AddPayer: handlers.add_payer,
+    commands.GetPayer: handlers.get_payer,
     commands.AddOrder: handlers.add_order,
     commands.UploadOrders: handlers.upload_payment_orders_from_file,
 }

@@ -40,7 +40,7 @@ def order():
     number = request.args.get("number")
     if number:
         orders = handlers.get_order(uow=uow, number=number)
-        return jsonify(orders), 200
+        
     orders = handlers.get_orders(uow)
     return jsonify(orders), 200
 
