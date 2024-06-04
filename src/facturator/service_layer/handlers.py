@@ -15,7 +15,7 @@ def add_order(
 ) -> None:
     with uow:
 
-        if not all([cmd.payer_name, cmd.date, cmd.quantity, cmd.number]):
+        if not all([cmd.payer_name, cmd.date, cmd.quantity]):
             raise ValueError("All attributes must be provided")
         payer = get_payer_from_name(cmd.payer_name, uow.payers.list_all())
 
@@ -28,6 +28,27 @@ def add_order(
         order.allocate_payer(payer)
         uow.orders.add(order)
         uow.commit()
+
+def get_orders(uow):
+    with uow:
+        query = text("SELECT * FROM orders")
+        rows = uow.session.execute(query).all()
+        if rows:
+            orders = [row._asdict() for row in rows]
+            return orders
+
+        return [{'no': 'data'}]
+    
+def get_order(uow, number):
+    with uow:
+        query = text("SELECT * FROM orders WHERE number = :number") 
+        rows = uow.session.execute(query, {'number': number}).all()
+        if rows:
+            orders = [row._asdict() for row in rows]
+            return orders      
+    
+    return [{'no': 'data'}]
+
 
 
 def add_payer(
@@ -51,7 +72,7 @@ def update_payer(uow, cmd):
         payer = uow.payers.get_by_id(cmd.id) 
         payer.name = cmd.name if cmd.name else payer.name  
         payer.nif = cmd.nif if cmd.nif else payer.nif
-        payer.address_dir = cmd.address if cmd.address else payer.address_dir
+        payer.address = cmd.address if cmd.address else payer.address
         payer.zip_code = cmd.zip_code if cmd.zip_code else payer.zip_code
         payer.city = cmd.city if cmd.city else payer.city
         payer.province = cmd.province if cmd.province else payer.province
@@ -63,8 +84,25 @@ def delete_payer(uow, cmd):
         uow.session.execute(query_payers, dict(payer_id = cmd.id))
         uow.session.commit()
 
+def get_payers(uow):
+    with uow:
+        query = text("SELECT * FROM payers")
+        rows = uow.session.execute(query).all()
+        if rows:
+            payers = [row._asdict() for row in rows]
+            return payers
 
-
+        return [{'no': 'data'}]
+    
+def get_payer(uow, id):
+    with uow:
+        query = text("SELECT * FROM payers WHERE id = :id") 
+        rows = uow.session.execute(query, {'id': id}).all()
+        if rows:
+            payers = [row._asdict() for row in rows]
+            return payers      
+        
+        return [{'no': 'data'}]         
 
 def get_payer_from_name(name, payers):
     """
@@ -124,46 +162,9 @@ def upload_payment_orders_from_file(cmd, uow):
         uow.commit()
 
 
-def get_payers(uow):
-    with uow:
-        query = text("SELECT * FROM payers")
-        rows = uow.session.execute(query).all()
-        if rows:
-            payers = [row._asdict() for row in rows]
-            return payers
-
-        return [{'no': 'data'}]
-    
-def get_payer(uow, id):
-    with uow:
-        query = text("SELECT * FROM payers WHERE id = :id") 
-        rows = uow.session.execute(query, {'id': id}).all()
-        if rows:
-            payers = [row._asdict() for row in rows]
-            return payers      
-        
-        return [{'no': 'data'}] 
 
 
-def get_orders(uow):
-    with uow:
-        query = text("SELECT * FROM orders")
-        rows = uow.session.execute(query).all()
-        if rows:
-            orders = [row._asdict() for row in rows]
-            return orders
 
-        return [{'no': 'data'}]
-    
-def get_order(uow, number):
-    with uow:
-        query = text("SELECT * FROM orders WHERE number = :number") 
-        rows = uow.session.execute(query, {'number': number}).all()
-        if rows:
-            orders = [row._asdict() for row in rows]
-            return orders      
-    
-    return [{'no': 'data'}]
 
 
 def get_order_context(uow, order_number):

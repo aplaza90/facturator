@@ -35,7 +35,7 @@ class AddOrder(Command):
     payer_name: str
     date: str
     quantity: float
-    number: str
+    number: str = None
 
 
 @dataclass

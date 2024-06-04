@@ -106,7 +106,7 @@ class Orders(Resource):
                 payer_name=request.json["payer_name"],
                 date=request.json["date"],
                 quantity=request.json["quantity"],
-                number=request.json["number"],
+                number=request.json.get("number"),
             )
             messagebus.handle(message=cmd, uow=uow)
             return "OK", 201

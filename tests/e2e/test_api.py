@@ -4,7 +4,7 @@ from pathlib import Path
 from facturator import config
 
 
-def test_store_orders():
+def test_store_orders(setup_orders):
     file_path = Path(__file__).resolve().parent.parent / 'data' / 'movs_feb.xls'
     files = {'file': open(file_path, 'rb')}
 
@@ -13,12 +13,12 @@ def test_store_orders():
     assert response.status_code == 201
 
 
-def test_add_payer():
+def test_add_payer(setup_payers):
     url = config.get_api_url()
     json_data = {
-        "name": "John Doe",
+        "name": "Some Payer",
         "nif": "123456789",
-        "address": "123 Main St",
+        "address": "Some street",
         "zip_code": "12345",
         "city": "Example City",
         "province": "Example Province"
