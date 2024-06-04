@@ -88,10 +88,45 @@ class Payers(Resource):
         return "OK", 201
     
 class Order(Resource):
-    def get(self, number):
+    def get(self, id):
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
-        orders = handlers.get_order(uow=uow, number=number)
+        orders = handlers.get_order(uow=uow, id=id)
         return jsonify(orders)
+    
+    def patch(self, id):
+        uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
+        data = request.json
+        cmd = commands.UpdateOrder(
+            id=id,
+            payer_name=data.get("payer_name"),
+            date=data.get("date"),
+            quantity=data.get("quantity"),
+            number=data.get("number")
+        )
+        handlers.update_order(uow, cmd)
+        return "ok", 200
+    
+    def put(self, id):
+        uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
+        data = request.json
+        cmd = commands.UpdateOrder(
+            id=id,
+            payer_name=data["payer_name"],
+            date=data["date"],
+            quantity=data["quantity"],
+            number=data["number"]
+        )
+        handlers.update_order(uow, cmd)
+        return "ok", 200
+    
+    def delete(self, id):
+        uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
+        cmd = commands.DeleteOrder(id=id)
+        try:
+            handlers.delete_order(uow=uow, cmd=cmd)
+        except:
+            return 406, "Integrity violation"   
+        return 200, "OK"
 
 class Orders(Resource):
     def get(self):
@@ -154,7 +189,7 @@ class Orders(Resource):
 
 api.add_resource(Payer, '/payer/<id>')
 api.add_resource(Payers, '/payer')
-api.add_resource(Order, '/order/<number>')
+api.add_resource(Order, '/order/<id>')
 api.add_resource(Orders, '/order')
 
 if __name__ == "__main__":

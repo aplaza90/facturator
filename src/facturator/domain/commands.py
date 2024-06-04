@@ -37,6 +37,17 @@ class AddOrder(Command):
     quantity: float
     number: str = None
 
+@dataclass
+class UpdateOrder(Command):
+    id: int
+    payer_name: str = None
+    date: str = None
+    quantity: float = None
+    number: str = None  
+
+@dataclass
+class DeleteOrder(Command):
+    id: int
 
 @dataclass
 class UploadOrders(Command):

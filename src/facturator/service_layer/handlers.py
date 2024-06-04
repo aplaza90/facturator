@@ -39,16 +39,33 @@ def get_orders(uow):
 
         return [{'no': 'data'}]
     
-def get_order(uow, number):
+def get_order(uow, id):
     with uow:
-        query = text("SELECT * FROM orders WHERE number = :number") 
-        rows = uow.session.execute(query, {'number': number}).all()
+        query = text("SELECT * FROM orders WHERE id = :id") 
+        rows = uow.session.execute(query, {'id': id}).all()
         if rows:
             orders = [row._asdict() for row in rows]
             return orders      
     
     return [{'no': 'data'}]
 
+def update_order(uow, cmd):
+    with uow:
+        order = uow.orders.get_by_id(cmd.id) 
+        if cmd.payer_name:
+          order.payer_name = cmd.payer_name 
+          payer = get_payer_from_name(cmd.payer_name, uow.payers.list_all())
+          order.allocate_payer(payer)
+        order.date = cmd.date if cmd.date else order.date
+        order.quantity = cmd.quantity if cmd.quantity else order.quantity
+        order.number = cmd.number if cmd.number else order.number
+        uow.commit()
+
+def delete_order(uow, cmd):
+    with uow:
+        query_orders = text("DELETE FROM orders WHERE id = :order_id")
+        uow.session.execute(query_orders, dict(order_id = cmd.id))
+        uow.session.commit()
 
 
 def add_payer(
