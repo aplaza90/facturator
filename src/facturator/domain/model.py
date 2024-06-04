@@ -1,10 +1,13 @@
 
 
 class Payer:
-    def __init__(self, name, address=None, nif=None):
+    def __init__(self, name, nif=None, address=None, zip_code=None, city=None, province=None):
         self.name = name
-        self.address = address
         self.nif = nif
+        self.address = address
+        self.zip_code = zip_code
+        self.city = city
+        self.province = province
 
     def __str__(self):
         return f"the payer is {self.name}"

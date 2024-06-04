@@ -22,18 +22,20 @@ def generate_random_payer_data(name):
     # Create and return the dictionary
     data = {
         "name": name,
+        "nif": nif,
         "address": address,
         "zip_code": zip_code,
         "city": city,
-        "province": province,
-        "nif": nif
+        "province": province
     }
     return data
 
 
-def insert_address(session, address, zip_code, city, province):
+def insert_payer(session, name, nif, address, zip_code, city, province):
     result = session.execute(
-        orm.addresses.insert().values(
+        orm.payers.insert().values(
+            name=name,
+            nif=nif,
             address=address,
             zip_code=zip_code,
             city=city,
@@ -44,23 +46,10 @@ def insert_address(session, address, zip_code, city, province):
     return inserted_id
 
 
-def insert_payer(session, name, address, nif):
-    result = session.execute(
-        orm.payers.insert().values(
-            name=name,
-            address_id=address,
-            nif=nif
-        )
-    )
-    inserted_id = result.inserted_primary_key[0]
-    return inserted_id
-
-
 def insert_payer_complete(
         name,  address, zip_code, city, province, nif, session
 ):
-    address_id = insert_address(session, address, zip_code, city, province)
-    payer_id = insert_payer(session, name, address_id, nif)
+    payer_id = insert_payer(session, name, nif, address, zip_code, city, province)
     return payer_id
 
 
@@ -96,7 +85,6 @@ def test_uow_can_allocate_payer_into_order(session_factory):
         handlers.associate_number_to_invoice(order, order_code_gen)
         uow.orders.add(order)
         uow.commit()
-
     assert get_allocated_payer_id(session, 'pep') == 'Pepe'
 
 

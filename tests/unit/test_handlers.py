@@ -44,26 +44,37 @@ class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
 sample_payers = [
     Payer(
         name="Luis Sarmiento",
-        address=CompleteAddress("123 Main St", "12345", "Anytown", "CA"),
-        nif="123456789A"
+        nif="123456789A",
+        address="123 Main St", 
+        zip_code="12345",
+        city="Anytown",
+        province="CA"
     ),
     Payer(
         name="Luis Serrano",
-        address=CompleteAddress("456 Oak St", "67890", "Othertown", "NY"),
-        nif="987654321B"
+        nif="123456789A",
+        address="123 Main St", 
+        zip_code="12345",
+        city="Anytown",
+        province="CA"
     ),
     Payer(
         name="Luis Moreno",
-        address=CompleteAddress("789 Elm St", "54321", "Somewhere", "TX"),
-        nif="567890123C"
+        nif="123456789A",
+        address="123 Main St", 
+        zip_code="12345",
+        city="Anytown",
+        province="CA"
     ),
     Payer(
         name="Luis Moron",
-        address=CompleteAddress("101 Pine St", "98765", "Nowhere", "FL"),
-        nif="321098765D"
-    ),
+        nif="123456789A",
+        address="123 Main St", 
+        zip_code="12345",
+        city="Anytown",
+        province="CA"
+    )
 ]
-
 
 def test_add_order():
     uow = FakeUnitOfWork()

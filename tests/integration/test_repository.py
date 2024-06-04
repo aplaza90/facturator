@@ -57,14 +57,20 @@ def test_add_and_list_payer(in_memory_session):
 
     sample_payers = [
         model.Payer(
-            name="Luis Sarmiento",
-            address=model.CompleteAddress("123 Main St", "12345", "Anytown", "CA"),
-            nif="123456789A"
+        name="Luis Sarmiento",
+        nif="123456789A",
+        address="123 Main St", 
+        zip_code="12345",
+        city="Anytown",
+        province="CA"
         ),
         model.Payer(
-            name="Luis Serrano",
-            address=model.CompleteAddress("456 Oak St", "67890", "Othertown", "NY"),
-            nif="987654321B"
+        name="Luis Serrano",
+        nif="123456789A",
+        address="123 Main St", 
+        zip_code="12345",
+        city="Anytown",
+        province="CA"
         )
     ]
     payer_repo = repository.SqlAlchemyRepository(

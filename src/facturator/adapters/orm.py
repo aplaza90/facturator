@@ -22,13 +22,6 @@ payers = Table(
     Column('id', Integer, primary_key=True, autoincrement=True),
     Column('name', String(255)),
     Column('nif', String(20)),
-    Column('address_id', Integer, ForeignKey('addresses.id')),
-)
-
-addresses = Table(
-    'addresses',
-    metadata,
-    Column('id', Integer, primary_key=True, autoincrement=True),
     Column('address', String(255)),
     Column('zip_code', String(10)),
     Column('city', String(100)),
@@ -39,11 +32,7 @@ addresses = Table(
 def start_mappers():
     mapper_registry = registry()
 
-    mapper_registry.map_imperatively(model.CompleteAddress, addresses)
-
-    mapper_registry.map_imperatively(model.Payer, payers, properties={
-        'address': relationship(model.CompleteAddress)
-    })
+    mapper_registry.map_imperatively(model.Payer, payers)
 
     mapper_registry.map_imperatively(
         model.InvoiceOrder, orders, properties={

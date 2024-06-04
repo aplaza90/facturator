@@ -35,16 +35,14 @@ def add_payer(
         uow,
 ) -> None:
     with uow:
-        complete_address = model.CompleteAddress(
-            cmd.address,
-            cmd.zip_code,
-            cmd.city,
-            cmd.province
-        )
+        
         uow.payers.add(model.Payer(
             name=cmd.name,
-            address=complete_address,
-            nif=cmd.nif
+            nif=cmd.nif,
+            address=cmd.address,
+            zip_code=cmd.zip_code,
+            city=cmd.city,
+            province=cmd.province
         ))
         uow.commit()
 
@@ -53,23 +51,16 @@ def update_payer(uow, cmd):
         payer = uow.payers.get_by_id(cmd.id) 
         payer.name = cmd.name if cmd.name else payer.name  
         payer.nif = cmd.nif if cmd.nif else payer.nif
-        payer.address.address = cmd.address if cmd.address else payer.address.address
-        payer.address.zip_code = cmd.zip_code if cmd.zip_code else payer.address.zip_code
-        payer.address.city = cmd.city if cmd.city else payer.address.city
-        payer.address.province = cmd.province if cmd.province else payer.address.province
+        payer.address_dir = cmd.address if cmd.address else payer.address_dir
+        payer.zip_code = cmd.zip_code if cmd.zip_code else payer.zip_code
+        payer.city = cmd.city if cmd.city else payer.city
+        payer.province = cmd.province if cmd.province else payer.province
         uow.commit()
 
 def delete_payer(uow, cmd):
     with uow:
-        payer = uow.payers.get_by_id(cmd.id)
-        address_id = payer.address
-
         query_payers = text("DELETE FROM payers WHERE id = :payer_id")
-        query_addresses = text("DELETE FROM addresses WHERE id = :address_id")
-
         uow.session.execute(query_payers, dict(payer_id = cmd.id))
-        
-
         uow.session.commit()
 
 
