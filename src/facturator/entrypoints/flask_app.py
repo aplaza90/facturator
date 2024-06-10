@@ -71,7 +71,8 @@ class Payer(Resource):
 class Payers(Resource):
     def get(self):
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
-        payers = handlers.get_payers(uow)
+        name = request.args.get('name')
+        payers = handlers.get_payers(uow, name)
         return jsonify(payers)
 
     def post(self):
@@ -131,7 +132,8 @@ class Order(Resource):
 class Orders(Resource):
     def get(self):
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
-        orders = handlers.get_orders(uow=uow)
+        number = request.args.get('number')
+        orders = handlers.get_orders(uow=uow, number=number)
         return jsonify(orders)
 
     def post(self):

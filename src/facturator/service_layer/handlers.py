@@ -29,15 +29,19 @@ def add_order(
         uow.orders.add(order)
         uow.commit()
 
-def get_orders(uow):
+def get_orders(uow, number):
     with uow:
-        query = text("SELECT * FROM orders")
-        rows = uow.session.execute(query).all()
+        if number:
+            query = text("SELECT * FROM orders WHERE number LIKE :number")
+            rows = uow.session.execute(query, dict(number=f"%{number}%")).all()
+        else:    
+            query = text("SELECT * FROM orders")
+            rows = uow.session.execute(query).all()
         if rows:
             orders = [row._asdict() for row in rows]
             return orders
 
-        return [{'no': 'data'}]
+        return []
     
 def get_order(uow, id):
     with uow:
@@ -101,15 +105,19 @@ def delete_payer(uow, cmd):
         uow.session.execute(query_payers, dict(payer_id = cmd.id))
         uow.session.commit()
 
-def get_payers(uow):
+def get_payers(uow, name):
     with uow:
-        query = text("SELECT * FROM payers")
-        rows = uow.session.execute(query).all()
+        if name:
+            query = text("SELECT * FROM payers WHERE name LIKE :name")
+            rows = uow.session.execute(query, dict(name=f"%{name}%")).all()
+        else:    
+          query = text("SELECT * FROM payers")
+          rows = uow.session.execute(query).all()
         if rows:
             payers = [row._asdict() for row in rows]
             return payers
 
-        return [{'no': 'data'}]
+        return []
     
 def get_payer(uow, id):
     with uow:
