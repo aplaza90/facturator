@@ -5,7 +5,7 @@ import pytest
 from facturator.adapters import repository
 from facturator.adapters.repository_entity_implementation import OrderImplementation, PayerImplementation
 from facturator.service_layer import handlers, unit_of_work
-from facturator.domain.model import Payer, CompleteAddress, InvoiceOrder
+from facturator.domain.model import Payer, InvoiceOrder
 from facturator.domain import commands
 
 

@@ -7,10 +7,11 @@ from facturator.service_layer.invoice_generator import invoice
 def test_generate_context():
     payer = model.Payer(
         name="test_name",
-        address=model.CompleteAddress(
-            "test ad", "123", "test_cty", "TS"
-        ),
-        nif="12A"
+        nif="12A",
+        address="test ad",
+        zip_code="123",
+        city="test_cty",
+        province="TS"
     )
 
     order = model.InvoiceOrder(

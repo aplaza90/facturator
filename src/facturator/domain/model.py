@@ -79,20 +79,4 @@ class InvoiceOrder:
     @property
     def lines(self):
         return self.calculate_lines(self.quantity)
-
-
-class CompleteAddress:
-    def __init__(self, address, zip_code, city, province):
-        self.address = address
-        self.zip_code = zip_code
-        self.city = city
-        self.province = province
-
-    def __eq__(self, other):
-        if not isinstance(other, CompleteAddress):
-            return False
-
-        return (self.address.lower() == other.address.lower() and
-                self.zip_code == other.zip_code and
-                self.city.lower() == other.city.lower() and
-                self.province.lower() == other.province.lower())
+    
