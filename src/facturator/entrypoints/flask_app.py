@@ -162,7 +162,33 @@ class Orders(Resource):
 
         return "OK", 201
     
+class Invoices(Resource):
+    def get(self):
+        uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
+        number = request.args.get('number')
+        context = handlers.get_order_context(uow=uow, order_number=number)
+        return jsonify(context)
 
+class Pdf(Resource):
+    def get(self):
+        uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
+        number = request.args.get('number')
+        context = handlers.get_order_context(uow=uow, order_number=number)
+
+        pdf_dir = Path(__file__).resolve().parent.parent / 'service_layer' / 'invoice_generator'
+        pdf_filename = f'{context["client_name"]}_{context["invoice_date"]}.pdf'
+        pdf_path = os.path.join(pdf_dir, pdf_filename)
+
+        @after_this_request
+        def remove_file(response):
+             try:
+                os.remove(pdf_path)
+             except Exception as error:
+                 app.logger.error(f"Error removing or closing downloaded file handle: {error}")
+             return response
+
+        invoice.create_pdf(context)
+        return send_file(pdf_path, as_attachment=True, download_name=pdf_filename, mimetype='application/pdf')
 
 # @app.route("/get_context", methods=['GET', 'POST'])
 # def get_order_context():
@@ -194,6 +220,8 @@ api.add_resource(Payer, '/payer/<id>')
 api.add_resource(Payers, '/payer')
 api.add_resource(Order, '/order/<id>')
 api.add_resource(Orders, '/order')
+api.add_resource(Invoices, '/invoice')
+api.add_resource(Pdf, '/pdf')
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080, debug=True)
