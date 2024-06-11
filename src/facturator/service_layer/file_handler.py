@@ -66,10 +66,16 @@ class ExcelFileHandler(AbstractFileHandler):
         return data
 
     @staticmethod
+    def convert_to_float(value):
+        value = value.replace('.', '')
+        value = value.replace(',', '.')
+        return float(value)
+
+    @staticmethod
     def _process_dates_and_numbers(data):
         data['Fecha Operaci?n'] = pd.to_datetime(data['Fecha Operaci?n'], dayfirst=True)
         data['Fecha Valor'] = pd.to_datetime(data['Fecha Valor'], dayfirst=True)
-        data['Importe'] = data['Importe'].apply(locale.atof) / 100
+        data['Importe'] = data['Importe'].apply(ExcelFileHandler.convert_to_float) / 100
         return data
 
     def _get_df_from_excel(self):
