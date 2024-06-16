@@ -29,11 +29,11 @@ def add_order(
         uow.orders.add(order)
         uow.commit()
 
-def get_orders(uow, number):
+def get_orders(uow, payer_name):
     with uow:
-        if number:
-            query = text("SELECT * FROM orders WHERE number LIKE :number")
-            rows = uow.session.execute(query, dict(number=f"%{number}%")).all()
+        if payer_name:
+            query = text("SELECT * FROM orders WHERE payer_name LIKE :payer_name")
+            rows = uow.session.execute(query, dict(payer_name=f"%{payer_name}%")).all()
         else:    
             query = text("SELECT * FROM orders")
             rows = uow.session.execute(query).all()

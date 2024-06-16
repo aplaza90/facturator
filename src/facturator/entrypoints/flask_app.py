@@ -1,6 +1,7 @@
+import datetime
 import os
 from pathlib import Path
-from flask import Flask, request, render_template, jsonify, send_file, after_this_request
+from flask import Flask, request, jsonify, send_file, after_this_request
 from flask_cors import CORS
 from flask_restful import Resource, Api
 from sqlalchemy import create_engine
@@ -12,6 +13,7 @@ from facturator.service_layer import handlers
 from facturator.service_layer import unit_of_work, messagebus
 from facturator.service_layer.invoice_generator import invoice
 from facturator.domain import commands
+from facturator.entrypoints import models
 
 orm.start_mappers()
 engine = create_engine(config.get_postgres_uri())
@@ -30,31 +32,27 @@ class Payer(Resource):
         return jsonify(payers)
   
     def patch(self, id):
+        try:
+            payer_data = models.PatchPayer(**request.json)
+        except models.ValidationError as e:
+            return {'error': str(e)}, 400
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
-        data = request.json
         cmd = commands.UpdatePayer(
             id=id,
-            name=data.get("name"),
-            nif=data.get("nif"),
-            address=data.get("address"),
-            zip_code=data.get("zip_code"),
-            city=data.get("city"),
-            province=data.get("province"),
+            **payer_data.model_dump()
         )
         handlers.update_payer(uow, cmd)
         return "ok", 200
     
     def put(self, id):
+        try:
+            payer_data = models.PostPayer(**request.json)
+        except models.ValidationError as e:
+            return {'error': str(e)}, 400
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
-        data = request.json
         cmd = commands.UpdatePayer(
             id=id,
-            name=data["name"],
-            nif=data["nif"],
-            address=data["address"],
-            zip_code=data["zip_code"],
-            city=data["city"],
-            province=data["province"],
+            **payer_data.model_dump()
         )
         handlers.update_payer(uow, cmd)
         return "ok", 200
@@ -76,15 +74,13 @@ class Payers(Resource):
         return jsonify(payers)
 
     def post(self):
+        try:
+            payer_data = models.PostPayer(**request.json)
+        except models.ValidationError as e:
+            return {'error': str(e)}, 400
+                
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
-        cmd = commands.AddPayer(
-            name=request.json["name"],
-            nif=request.json["nif"],
-            address=request.json["address"],
-            zip_code=request.json["zip_code"],
-            city=request.json["city"],
-            province=request.json["province"],
-        )
+        cmd = commands.AddPayer(**payer_data.model_dump())
         messagebus.handle(message=cmd, uow=uow)
         return "OK", 201
     
@@ -95,27 +91,29 @@ class Order(Resource):
         return jsonify(orders)
     
     def patch(self, id):
+        try:
+            order_data = models.PatchOrder(**request.json)
+        except models.ValidationError as e:
+            return {'error': str(e)}, 400
+        
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
-        data = request.json
         cmd = commands.UpdateOrder(
             id=id,
-            payer_name=data.get("payer_name"),
-            date=data.get("date"),
-            quantity=data.get("quantity"),
-            number=data.get("number")
+            **order_data.model_dump()
         )
         handlers.update_order(uow, cmd)
         return "ok", 200
     
     def put(self, id):
+        try:
+            order_data = models.PostOrder(**request.json)
+        except models.ValidationError as e:
+            return {'error': str(e)}, 400
+        
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
-        data = request.json
         cmd = commands.UpdateOrder(
             id=id,
-            payer_name=data["payer_name"],
-            date=data["date"],
-            quantity=data["quantity"],
-            number=data["number"]
+            **order_data.model_dump()
         )
         handlers.update_order(uow, cmd)
         return "ok", 200
@@ -132,19 +130,19 @@ class Order(Resource):
 class Orders(Resource):
     def get(self):
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
-        number = request.args.get('number')
-        orders = handlers.get_orders(uow=uow, number=number)
+        payer_name = request.args.get('payer_name')
+        orders = handlers.get_orders(uow=uow, payer_name=payer_name)
         return jsonify(orders)
 
-    def post(self):
+    def post(self):  
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
         if request.is_json:
-            cmd = commands.AddOrder(
-                payer_name=request.json["payer_name"],
-                date=request.json["date"],
-                quantity=request.json["quantity"],
-                number=request.json.get("number"),
-            )
+            try:
+              order_data = models.PostOrder(**request.json)
+            except models.ValidationError as e:
+              return {'error': str(e)}, 400
+            
+            cmd = commands.AddOrder(**order_data.model_dump())
             messagebus.handle(message=cmd, uow=uow)
             return "OK", 201
         
@@ -190,31 +188,6 @@ class Pdf(Resource):
         invoice.create_pdf(context)
         return send_file(pdf_path, as_attachment=True, download_name=pdf_filename, mimetype='application/pdf')
 
-# @app.route("/get_context", methods=['GET', 'POST'])
-# def get_order_context():
-#     if request.method == 'POST':
-#         order_number = request.json["order_number"]
-#         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
-#         context = handlers.get_order_context(uow=uow, order_number=order_number)
-
-#         # Path where the PDF will be generated
-#         pdf_dir = Path(__file__).resolve().parent.parent / 'service_layer' / 'invoice_generator'
-#         pdf_filename = f'{context["client_name"]}_{context["invoice_date"]}.pdf'
-#         pdf_path = os.path.join(pdf_dir, pdf_filename)
-
-#         invoice.create_pdf(context)
-
-#         @after_this_request
-#         def remove_file(response):
-#             try:
-#                 os.remove(pdf_path)
-#             except Exception as error:
-#                 app.logger.error(f"Error removing or closing downloaded file handle: {error}")
-#             return response
-
-#         return send_file(pdf_path, as_attachment=True, download_name=pdf_filename, mimetype='application/pdf')
-
-#     return render_template("get_pdf.html")
 
 api.add_resource(Payer, '/payer/<id>')
 api.add_resource(Payers, '/payer')
