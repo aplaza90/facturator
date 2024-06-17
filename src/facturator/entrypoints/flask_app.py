@@ -144,7 +144,7 @@ class Payer(Resource):
 
 class Payers(Resource):
     
-    def get(self, current_user):
+    def get(self):
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
         name = request.args.get('name')
         payers = handlers.get_payers(uow, name)
