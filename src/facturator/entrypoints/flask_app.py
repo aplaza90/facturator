@@ -1,19 +1,22 @@
-import datetime
+from datetime import datetime, timedelta
 import os
 from pathlib import Path
-from flask import Flask, request, jsonify, send_file, after_this_request
+from flask import Flask, request, jsonify, send_file, after_this_request, make_response
 from flask_cors import CORS
 from flask_restful import Resource, Api
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from werkzeug.security import generate_password_hash, check_password_hash
+import jwt
+import uuid
 
 from facturator import config
 from facturator.adapters import orm
 from facturator.service_layer import handlers
 from facturator.service_layer import unit_of_work, messagebus
 from facturator.service_layer.invoice_generator import invoice
-from facturator.domain import commands
-from facturator.entrypoints import models
+from facturator.domain import commands, model
+from facturator.entrypoints import models, decorators
 
 orm.start_mappers()
 engine = create_engine(config.get_postgres_uri())
@@ -25,7 +28,79 @@ CORS(app)
 api = Api(app)
 
 
+@app.route('/signup', methods=['POST'])
+def signup_user():
+    try:
+        signup_data = models.SignUp(**request.json)
+    except models.ValidationError as e:
+        return {'error': 'Invalid Signup data'}, 400
+    session = get_session()
+    hashed_password = generate_password_hash(signup_data.password, method='pbkdf2:sha256')
+
+    user = session.query(model.User).filter_by(username=signup_data.username).first()
+    if not user:
+        new_user = model.User(
+            public_id=str(uuid.uuid4()),
+            username = signup_data.username,
+            nif = signup_data.nif,
+            address = signup_data.address,
+            zip_code = signup_data.zip_code,
+            city = signup_data.city,
+            province = signup_data.province,
+            email = signup_data.email,
+            password=hashed_password
+        )
+        session.add(new_user) 
+        session.commit() 
+
+        return jsonify({'message': 'registered successfully'}), 201
+    else:
+        return jsonify({"message": "User already exists!"}), 409
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    try:
+        login_data = models.LogIn(**request.json)
+    except models.ValidationError as e:
+        return {'error': 'Invalid LogIn data'}, 400
+    
+    session = get_session()
+    user = session.query(model.User).filter_by(username=login_data.username).first()
+    if not user:
+        return make_response('Could not verify user!', 401, {'WWW-Authenticate': 'Basic-realm= "No user found!"'})
+    
+    if check_password_hash(user.password, login_data.password):
+        token = jwt.encode(
+            {
+                'public_id': user.public_id,
+                'exp': datetime.utcnow() + timedelta(minutes=30)
+            }, 
+            config.get_app_secret_hey(), 
+            'HS256'
+        )
+        response = make_response(jsonify({'message': 'Login successful'}), 201)
+        response.set_cookie('token', token, httponly=True, secure=True, samesite='Strict')
+        return response
+
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    response = make_response(jsonify({'message': 'Logged out successfully'}), 200)
+    
+    response.delete_cookie('token', path='/') 
+    
+    return response    
+
+
+@app.route('/protected', methods=['GET'])
+@decorators.token_required(session=get_session())
+def protected_resource(current_user):
+    return make_response(f'Hello {current_user.username}', 200)
+
+
 class Payer(Resource):
+    
     def get(self, id):
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
         payers = handlers.get_payer(uow=uow, id=id)
@@ -65,9 +140,11 @@ class Payer(Resource):
         except:
             return 406, "Integrity violation"   
         return 200, "OK"
-    
+
+
 class Payers(Resource):
-    def get(self):
+    
+    def get(self, current_user):
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
         name = request.args.get('name')
         payers = handlers.get_payers(uow, name)
@@ -83,7 +160,8 @@ class Payers(Resource):
         cmd = commands.AddPayer(**payer_data.model_dump())
         messagebus.handle(message=cmd, uow=uow)
         return "OK", 201
-    
+
+
 class Order(Resource):
     def get(self, id):
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
@@ -127,6 +205,7 @@ class Order(Resource):
             return 406, "Integrity violation"   
         return 200, "OK"
 
+
 class Orders(Resource):
     def get(self):
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
@@ -159,13 +238,15 @@ class Orders(Resource):
         messagebus.handle(message=cmd, uow=uow)
 
         return "OK", 201
-    
+
+
 class Invoices(Resource):
     def get(self):
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
         number = request.args.get('number')
         context = handlers.get_order_context(uow=uow, order_number=number)
         return jsonify(context)
+
 
 class Pdf(Resource):
     def get(self):

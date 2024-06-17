@@ -92,4 +92,11 @@ def setup_payers(postgres_db):
     yield
     restart_table_in_db(engine=postgres_db, session=session, table_name='payers', param="CASCADE")
     
-    
+@pytest.fixture
+def setup_users(postgres_db):
+    session = sessionmaker(bind=postgres_db)()
+    session.execute(text("DELETE FROM users"))
+    session.commit()
+    yield
+    session.execute(text("DELETE FROM users"))    
+    session.commit()

@@ -2,6 +2,22 @@ from pydantic import BaseModel, ValidationError
 from typing import Optional
 
 
+class SignUp(BaseModel):
+    username: str
+    nif: str
+    address: str
+    zip_code: str
+    city: str
+    province: str
+    email: str
+    password: str
+
+
+class LogIn(BaseModel):
+    username: str
+    password: str
+
+
 class PostPayer(BaseModel):
     name: str
     nif: str
@@ -9,6 +25,7 @@ class PostPayer(BaseModel):
     zip_code: str
     city: str
     province: str
+
 
 class PatchPayer(BaseModel):
     name: Optional[str] = None
@@ -18,11 +35,13 @@ class PatchPayer(BaseModel):
     city: Optional[str] = None
     province: Optional[str] = None
 
+
 class PostOrder(BaseModel):
     number: str
     payer_name: str
     date: str
     quantity: float
+
 
 class PatchOrder(BaseModel):
     number: Optional[str] = None

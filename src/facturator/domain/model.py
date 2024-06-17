@@ -1,4 +1,17 @@
 
+class User:
+    def __init__(
+            self, username, public_id, nif, address, zip_code, city, province, email, password
+    ):
+        self.username = username
+        self.public_id = public_id
+        self.nif = nif
+        self.address = address
+        self.zip_code = zip_code
+        self.city = city
+        self.province = province
+        self.email = email
+        self.password = password
 
 class Payer:
     def __init__(self, name, nif=None, address=None, zip_code=None, city=None, province=None):
