@@ -20,7 +20,7 @@ def add_order(
         payer = get_payer_from_name(cmd.payer_name, uow.payers.list_all())
 
         order = model.InvoiceOrder(
-            payer_name=cmd.payer_name,
+            payer_name=cmd.payer_name.upper(),
             date=cmd.date,
             quantity=cmd.quantity,
             number=cmd.number
@@ -33,7 +33,7 @@ def get_orders(uow, payer_name):
     with uow:
         if payer_name:
             query = text("SELECT * FROM orders WHERE payer_name LIKE :payer_name")
-            rows = uow.session.execute(query, dict(payer_name=f"%{payer_name}%")).all()
+            rows = uow.session.execute(query, dict(payer_name=f"%{payer_name.upper()}%")).all()
         else:    
             query = text("SELECT * FROM orders")
             rows = uow.session.execute(query).all()
@@ -79,7 +79,7 @@ def add_payer(
     with uow:
         
         uow.payers.add(model.Payer(
-            name=cmd.name,
+            name=cmd.name.upper(),
             nif=cmd.nif,
             address=cmd.address,
             zip_code=cmd.zip_code,
@@ -91,7 +91,7 @@ def add_payer(
 def update_payer(uow, cmd):
     with uow:
         payer = uow.payers.get_by_id(cmd.id) 
-        payer.name = cmd.name if cmd.name else payer.name  
+        payer.name = cmd.name.upper() if cmd.name else payer.name  
         payer.nif = cmd.nif if cmd.nif else payer.nif
         payer.address = cmd.address if cmd.address else payer.address
         payer.zip_code = cmd.zip_code if cmd.zip_code else payer.zip_code
@@ -109,7 +109,7 @@ def get_payers(uow, name):
     with uow:
         if name:
             query = text("SELECT * FROM payers WHERE name LIKE :name")
-            rows = uow.session.execute(query, dict(name=f"%{name}%")).all()
+            rows = uow.session.execute(query, dict(name=f"%{name.upper()}%")).all()
         else:    
           query = text("SELECT * FROM payers")
           rows = uow.session.execute(query).all()

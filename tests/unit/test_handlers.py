@@ -104,7 +104,7 @@ def test_add_payer():
         cmd=cmd,
         uow=uow,
     )
-    assert uow.payers.get('payer1') is not None
+    assert uow.payers.get('payer1'.upper()) is not None
     assert uow.committed
 
 
