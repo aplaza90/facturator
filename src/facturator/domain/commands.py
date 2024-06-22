@@ -9,6 +9,7 @@ class Command:
 
 @dataclass
 class AddPayer(Command):
+    id: str
     name: str
     nif: str
     address: str

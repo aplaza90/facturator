@@ -1,6 +1,7 @@
 # pylint: disable=protected-access
 from sqlalchemy import text
 from datetime import date
+import uuid
 
 from facturator.domain import model
 from facturator.adapters import repository
@@ -57,6 +58,7 @@ def test_add_and_list_payer(in_memory_session):
 
     sample_payers = [
         model.Payer(
+        id=str(uuid.uuid4()),  
         name="Luis Sarmiento",
         nif="123456789A",
         address="123 Main St", 
@@ -65,6 +67,7 @@ def test_add_and_list_payer(in_memory_session):
         province="CA"
         ),
         model.Payer(
+        id=str(uuid.uuid4()),  
         name="Luis Serrano",
         nif="123456789A",
         address="123 Main St", 

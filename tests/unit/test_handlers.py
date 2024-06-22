@@ -1,4 +1,5 @@
 import datetime
+import uuid
 
 import pytest
 
@@ -92,6 +93,7 @@ def test_add_order():
 def test_add_payer():
     uow = FakeUnitOfWork()
     cmd = commands.AddPayer(
+        id=str(uuid.uuid4()),
         name='payer1',
         nif='1111',
         address='test_addr',

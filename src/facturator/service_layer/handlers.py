@@ -79,6 +79,7 @@ def add_payer(
     with uow:
         
         uow.payers.add(model.Payer(
+            id=cmd.id,
             name=cmd.name.upper(),
             nif=cmd.nif,
             address=cmd.address,
@@ -90,7 +91,9 @@ def add_payer(
 
 def update_payer(uow, cmd):
     with uow:
-        payer = uow.payers.get_by_id(cmd.id) 
+        payer = uow.payers.get_by_id(cmd.id)
+        if not payer:
+            return{}
         payer.name = cmd.name.upper() if cmd.name else payer.name  
         payer.nif = cmd.nif if cmd.nif else payer.nif
         payer.address = cmd.address if cmd.address else payer.address
@@ -98,12 +101,17 @@ def update_payer(uow, cmd):
         payer.city = cmd.city if cmd.city else payer.city
         payer.province = cmd.province if cmd.province else payer.province
         uow.commit()
+        return payer.to_dict()
 
 def delete_payer(uow, cmd):
     with uow:
+        payer = uow.payers.get_by_id(cmd.id)
+        if not payer:
+            return None
         query_payers = text("DELETE FROM payers WHERE id = :payer_id")
         uow.session.execute(query_payers, dict(payer_id = cmd.id))
         uow.session.commit()
+        return 'Payer deleted succesfully'
 
 def get_payers(uow, name):
     with uow:
@@ -124,10 +132,10 @@ def get_payer(uow, id):
         query = text("SELECT * FROM payers WHERE id = :id") 
         rows = uow.session.execute(query, {'id': id}).all()
         if rows:
-            payers = [row._asdict() for row in rows]
-            return payers      
+            [payer] = [row._asdict() for row in rows]
+            return payer      
         
-        return [{'no': 'data'}]         
+        return None         
 
 def get_payer_from_name(name, payers):
     """

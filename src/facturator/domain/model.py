@@ -14,7 +14,8 @@ class User:
         self.password = password
 
 class Payer:
-    def __init__(self, name, nif=None, address=None, zip_code=None, city=None, province=None):
+    def __init__(self, id=None, name=None, nif=None, address=None, zip_code=None, city=None, province=None):
+        self.id = id
         self.name = name
         self.nif = nif
         self.address = address
@@ -30,6 +31,17 @@ class Payer:
 
     def __hash__(self):
         return hash(self.name)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'nif': self.nif,
+            'address': self.address,
+            'zip_code': self.zip_code,
+            'city': self.city,
+            'province': self.province
+        }
 
 
 class InvoiceOrder:

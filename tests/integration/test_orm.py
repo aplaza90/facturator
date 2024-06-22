@@ -1,28 +1,36 @@
 from facturator.domain import model
 from sqlalchemy import text
 from datetime import date
+import uuid
 
 
 def test_retrieve_payer(in_memory_session):
+    uuid1 = str(uuid.uuid4())
+    uuid2 = str(uuid.uuid4())
+    uuid3 = str(uuid.uuid4())
+
     query_payers = text(
-        "INSERT INTO payers (name) VALUES "
-        '("payer1"),'
-        '("payer2"),'
-        '("payer3")'
+        f"INSERT INTO payers (id, name) VALUES "
+        f"('{uuid1}' ,'payer1'),"
+        f"('{uuid2}' ,'payer2'),"
+        f"('{uuid3}' ,'payer3')"
     )
     in_memory_session.execute(query_payers)
-
+  
     expected_payers = [
-        model.Payer("payer1"),
-        model.Payer("payer2"),
-        model.Payer("payer3"),
+        model.Payer(id=uuid1, name="payer1"),
+        model.Payer(id=uuid2, name="payer2"),
+        model.Payer(id=uuid3, name="payer3"),
     ]
 
     assert in_memory_session.query(model.Payer).all() == expected_payers
 
 
 def test_saving_payers(in_memory_session):
-    new_payer = model.Payer("payer1")
+    new_payer = model.Payer(
+        id=str(uuid.uuid4()),
+        name="payer1"
+    )
     in_memory_session.add(new_payer)
     in_memory_session.commit()
 

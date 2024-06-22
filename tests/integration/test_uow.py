@@ -1,6 +1,7 @@
 from datetime import datetime
 from sqlalchemy import text
 import pytest
+import uuid
 
 import random
 import string
@@ -32,8 +33,10 @@ def generate_random_payer_data(name):
 
 
 def insert_payer(session, name, nif, address, zip_code, city, province):
+    id = str(uuid.uuid4())
     result = session.execute(
         orm.payers.insert().values(
+            id = id,
             name=name,
             nif=nif,
             address=address,
@@ -42,8 +45,7 @@ def insert_payer(session, name, nif, address, zip_code, city, province):
             province=province
         )
     )
-    inserted_id = result.inserted_primary_key[0]
-    return inserted_id
+    return id
 
 
 def insert_payer_complete(

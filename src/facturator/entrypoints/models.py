@@ -1,5 +1,5 @@
-from pydantic import BaseModel, ValidationError
-from typing import Optional
+from pydantic import BaseModel, ValidationError, ConfigDict, UUID4
+from typing import Optional, List
 
 
 class SignUp(BaseModel):
@@ -19,6 +19,7 @@ class LogIn(BaseModel):
 
 
 class PostPayer(BaseModel):
+    model_config = ConfigDict(extra='forbid')
     name: str
     nif: str
     address: str
@@ -27,7 +28,16 @@ class PostPayer(BaseModel):
     province: str
 
 
+class PayerItemResponse(PostPayer):
+    id: UUID4
+
+
+class PayerListResponse(BaseModel):
+    payers: List[PayerItemResponse] = []    
+
+
 class PatchPayer(BaseModel):
+    model_config = ConfigDict(extra='forbid')
     name: Optional[str] = None
     nif: Optional[str] = None
     address: Optional[str] = None
@@ -37,6 +47,7 @@ class PatchPayer(BaseModel):
 
 
 class PostOrder(BaseModel):
+    model_config = ConfigDict(extra='forbid')
     number: str
     payer_name: str
     date: str
@@ -44,7 +55,9 @@ class PostOrder(BaseModel):
 
 
 class PatchOrder(BaseModel):
+    model_config = ConfigDict(extra='forbid')
     number: Optional[str] = None
     payer_name: Optional[str] = None
     date: Optional[str] = None
     quantity: Optional[float] = None
+

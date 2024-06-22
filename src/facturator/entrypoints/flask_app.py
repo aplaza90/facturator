@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 import os
 from pathlib import Path
-from flask import Flask, request, jsonify, send_file, after_this_request, make_response
+from flask import Flask, request, jsonify, send_file, after_this_request, make_response, abort
 from flask_cors import CORS
 from flask_restful import Resource, Api
 from sqlalchemy import create_engine
@@ -103,8 +103,11 @@ class Payer(Resource):
     
     def get(self, id):
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
-        payers = handlers.get_payer(uow=uow, id=id)
-        return jsonify(payers)
+        payer = handlers.get_payer(uow=uow, id=id)
+        if payer:
+            response_data = models.PayerItemResponse(**payer)
+            return make_response(jsonify(response_data.model_dump()), 200)
+        abort(404, description=f"Payer with ID {id} not found")
   
     def patch(self, id):
         try:
@@ -116,30 +119,48 @@ class Payer(Resource):
             id=id,
             **payer_data.model_dump()
         )
-        handlers.update_payer(uow, cmd)
-        return "ok", 200
-    
+        payer_dict = handlers.update_payer(uow, cmd)
+
+        if payer_dict:
+            response_data = models.PayerItemResponse(**payer_dict)
+            return make_response(jsonify(response_data.model_dump()), 200)
+        
+        abort(404, description=f"Payer with ID {id} not found")
+
+        
     def put(self, id):
         try:
             payer_data = models.PostPayer(**request.json)
         except models.ValidationError as e:
             return {'error': str(e)}, 400
+        
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
         cmd = commands.UpdatePayer(
             id=id,
             **payer_data.model_dump()
         )
-        handlers.update_payer(uow, cmd)
-        return "ok", 200
+        payer_dict = handlers.update_payer(uow, cmd)
+
+        if payer_dict:
+            response_data = models.PayerItemResponse(**payer_dict)
+            return make_response(jsonify(response_data.model_dump()), 200)
+        
+        abort(404, description=f"Payer with ID {id} not found")
     
     def delete(self, id):
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
         cmd = commands.DeletePayer(id=id)
         try:
-            handlers.delete_payer(uow=uow, cmd=cmd)
+            result = handlers.delete_payer(uow=uow, cmd=cmd)
         except:
-            return 406, "Integrity violation"   
-        return 200, "OK"
+            return "Integrity violation", 406   
+        
+        if not result:
+            abort(404, description=f"Payer with ID {id} not found")
+
+        return "", 204
+        
+        
 
 
 class Payers(Resource):
@@ -148,6 +169,7 @@ class Payers(Resource):
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
         name = request.args.get('name')
         payers = handlers.get_payers(uow, name)
+        
         return jsonify(payers)
 
     def post(self):
@@ -157,9 +179,12 @@ class Payers(Resource):
             return {'error': str(e)}, 400
                 
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
-        cmd = commands.AddPayer(**payer_data.model_dump())
+        payer_id=str(uuid.uuid4())
+        cmd = commands.AddPayer(id=payer_id, **payer_data.model_dump())
         messagebus.handle(message=cmd, uow=uow)
-        return "OK", 201
+
+        response_data = models.PayerItemResponse(id=payer_id, **payer_data.model_dump())
+        return make_response(jsonify(response_data.model_dump()), 201)
 
 
 class Order(Resource):

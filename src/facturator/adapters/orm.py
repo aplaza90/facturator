@@ -26,7 +26,7 @@ orders = Table(
     metadata,
     Column('id', Integer, primary_key=True, autoincrement=True),
     Column('payer_name', String(255)),
-    Column('payer_id', Integer, ForeignKey('payers.id')),
+    Column('payer_id', String(255), ForeignKey('payers.id')),
     Column('date', Date),
     Column('quantity', Numeric(10, 2)),
     Column('number', String(50))
@@ -35,7 +35,7 @@ orders = Table(
 payers = Table(
     'payers',
     metadata,
-    Column('id', Integer, primary_key=True, autoincrement=True),
+    Column('id', String(255), primary_key=True),
     Column('name', String(255)),
     Column('nif', String(20)),
     Column('address', String(255)),
