@@ -1,6 +1,6 @@
 import re
 import pandas as pd
-import locale
+import uuid
 from abc import ABC, abstractmethod
 
 from facturator.domain.model import InvoiceOrder
@@ -98,6 +98,7 @@ class ExcelFileHandler(AbstractFileHandler):
         for index, row in grouped_df.iterrows():
             # Create an InvoiceOrder object for each row
             invoice_order = InvoiceOrder(
+                id=str(uuid.uuid4()),
                 payer_name=index,
                 date=row['Latest Date'],
                 quantity=row['Total Amount'],

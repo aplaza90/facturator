@@ -13,6 +13,7 @@ class User:
         self.email = email
         self.password = password
 
+
 class Payer:
     def __init__(self, id=None, name=None, nif=None, address=None, zip_code=None, city=None, province=None):
         self.id = id
@@ -46,6 +47,7 @@ class Payer:
 
 class InvoiceOrder:
     def __init__(self, payer_name, date, quantity, number=None, id=None):
+        self.id = id
         self.payer_name = payer_name
         self.date = date
         self.quantity = quantity
@@ -66,7 +68,17 @@ class InvoiceOrder:
         )
 
     def __hash__(self):
-        return hash(self.payer_name)
+        return hash((self.payer_name, self.date))
+    
+    def to_dict(self):
+      return {
+          'id': self.id,
+          'payer_name': self.payer_name,
+          'date': str(self.date),
+          'quantity': self.quantity,
+          'number': self.number, 
+          'payer_id': self._payer.id if self._payer else None
+      }
 
     @staticmethod
     def calculate_lines(qty):
@@ -98,7 +110,7 @@ class InvoiceOrder:
         self._payer = payer
 
     @property
-    def allocated_payer(self):
+    def payer(self):
         return self._payer
 
     @property

@@ -24,10 +24,10 @@ users = Table(
 orders = Table(
     'orders',
     metadata,
-    Column('id', Integer, primary_key=True, autoincrement=True),
+    Column('id', String(255), primary_key=True),
     Column('payer_name', String(255)),
     Column('payer_id', String(255), ForeignKey('payers.id')),
-    Column('date', Date),
+    Column('date', String(50)),
     Column('quantity', Numeric(10, 2)),
     Column('number', String(50))
 )

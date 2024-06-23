@@ -33,6 +33,7 @@ class DeletePayer(Command):
 
 @dataclass
 class AddOrder(Command):
+    id: str
     payer_name: str
     date: str
     quantity: float

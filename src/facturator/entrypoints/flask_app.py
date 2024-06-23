@@ -9,6 +9,8 @@ from sqlalchemy.orm import sessionmaker
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import uuid
+import yaml
+from flasgger import Swagger
 
 from facturator import config
 from facturator.adapters import orm
@@ -16,7 +18,8 @@ from facturator.service_layer import handlers
 from facturator.service_layer import unit_of_work, messagebus
 from facturator.service_layer.invoice_generator import invoice
 from facturator.domain import commands, model
-from facturator.entrypoints import models, decorators
+from facturator.entrypoints import decorators, schemas
+from facturator.entrypoints.config import BaseConfig
 
 orm.start_mappers()
 engine = create_engine(config.get_postgres_uri())
@@ -26,13 +29,17 @@ app = Flask(__name__, template_folder='templates')
 CORS(app)
 
 api = Api(app)
+app.config.from_object(BaseConfig)
 
+
+api_spec = yaml.safe_load((Path(__file__).parent / "api_spec.yaml").read_text())
+swagger = Swagger(app, template=api_spec)    
 
 @app.route('/signup', methods=['POST'])
 def signup_user():
     try:
-        signup_data = models.SignUp(**request.json)
-    except models.ValidationError as e:
+        signup_data = schemas.SignUp(**request.json)
+    except schemas.ValidationError as e:
         return {'error': 'Invalid Signup data'}, 400
     session = get_session()
     hashed_password = generate_password_hash(signup_data.password, method='pbkdf2:sha256')
@@ -61,8 +68,8 @@ def signup_user():
 @app.route('/login', methods=['POST'])
 def login():
     try:
-        login_data = models.LogIn(**request.json)
-    except models.ValidationError as e:
+        login_data = schemas.LogIn(**request.json)
+    except schemas.ValidationError as e:
         return {'error': 'Invalid LogIn data'}, 400
     
     session = get_session()
@@ -105,14 +112,14 @@ class Payer(Resource):
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
         payer = handlers.get_payer(uow=uow, id=id)
         if payer:
-            response_data = models.PayerItemResponse(**payer)
+            response_data = schemas.PayerItemResponse(**payer)
             return make_response(jsonify(response_data.model_dump()), 200)
         abort(404, description=f"Payer with ID {id} not found")
   
     def patch(self, id):
         try:
-            payer_data = models.PatchPayer(**request.json)
-        except models.ValidationError as e:
+            payer_data = schemas.PatchPayer(**request.json)
+        except schemas.ValidationError as e:
             return {'error': str(e)}, 400
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
         cmd = commands.UpdatePayer(
@@ -122,7 +129,7 @@ class Payer(Resource):
         payer_dict = handlers.update_payer(uow, cmd)
 
         if payer_dict:
-            response_data = models.PayerItemResponse(**payer_dict)
+            response_data = schemas.PayerItemResponse(**payer_dict)
             return make_response(jsonify(response_data.model_dump()), 200)
         
         abort(404, description=f"Payer with ID {id} not found")
@@ -130,8 +137,8 @@ class Payer(Resource):
         
     def put(self, id):
         try:
-            payer_data = models.PostPayer(**request.json)
-        except models.ValidationError as e:
+            payer_data = schemas.PostPayer(**request.json)
+        except schemas.ValidationError as e:
             return {'error': str(e)}, 400
         
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
@@ -142,7 +149,7 @@ class Payer(Resource):
         payer_dict = handlers.update_payer(uow, cmd)
 
         if payer_dict:
-            response_data = models.PayerItemResponse(**payer_dict)
+            response_data = schemas.PayerItemResponse(**payer_dict)
             return make_response(jsonify(response_data.model_dump()), 200)
         
         abort(404, description=f"Payer with ID {id} not found")
@@ -161,8 +168,6 @@ class Payer(Resource):
         return "", 204
         
         
-
-
 class Payers(Resource):
     
     def get(self):
@@ -170,15 +175,15 @@ class Payers(Resource):
         name = request.args.get('name')
         payers = handlers.get_payers(uow, name)
 
-        response_data = models.PayerListResponse(payers=[models.PayerItemResponse(**payer) for payer in payers])
+        response_data = schemas.PayerListResponse(payers=[schemas.PayerItemResponse(**payer) for payer in payers])
 
         return make_response(jsonify(response_data.model_dump(mode='json')), 200)
 
 
     def post(self):
         try:
-            payer_data = models.PostPayer(**request.json)
-        except models.ValidationError as e:
+            payer_data = schemas.PostPayer(**request.json)
+        except schemas.ValidationError as e:
             return {'error': str(e)}, 400
                 
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
@@ -186,20 +191,24 @@ class Payers(Resource):
         cmd = commands.AddPayer(id=payer_id, **payer_data.model_dump())
         messagebus.handle(message=cmd, uow=uow)
 
-        response_data = models.PayerItemResponse(id=payer_id, **payer_data.model_dump())
+        response_data = schemas.PayerItemResponse(id=payer_id, **payer_data.model_dump())
         return make_response(jsonify(response_data.model_dump()), 201)
 
 
 class Order(Resource):
     def get(self, id):
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
-        orders = handlers.get_order(uow=uow, id=id)
-        return jsonify(orders)
+        order = handlers.get_order(uow=uow, id=id)
+        if order:
+            response_data = schemas.OrderItemResponse(**order)
+            return make_response(jsonify(response_data.model_dump()), 200)
+        abort(404, description=f"Order with ID {id} not found")
+
     
     def patch(self, id):
         try:
-            order_data = models.PatchOrder(**request.json)
-        except models.ValidationError as e:
+            order_data = schemas.PatchOrder(**request.json)
+        except schemas.ValidationError as e:
             return {'error': str(e)}, 400
         
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
@@ -207,13 +216,18 @@ class Order(Resource):
             id=id,
             **order_data.model_dump()
         )
-        handlers.update_order(uow, cmd)
-        return "ok", 200
+        order_dict = handlers.update_order(uow, cmd)
+        if order_dict:
+            response_data = schemas.OrderItemResponse(**order_dict)
+            return make_response(jsonify(response_data.model_dump()), 200)
+        
+        abort(404, description=f"Payer with ID {id} not found")
+
     
     def put(self, id):
         try:
-            order_data = models.PostOrder(**request.json)
-        except models.ValidationError as e:
+            order_data = schemas.PostOrder(**request.json)
+        except schemas.ValidationError as e:
             return {'error': str(e)}, 400
         
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
@@ -221,17 +235,26 @@ class Order(Resource):
             id=id,
             **order_data.model_dump()
         )
-        handlers.update_order(uow, cmd)
-        return "ok", 200
+        order_dict = handlers.update_order(uow, cmd)
+
+        if order_dict:
+            response_data = schemas.OrderItemResponse(**order_dict)
+            return make_response(jsonify(response_data.model_dump()), 200)
+        
+        abort(404, description=f"Payer with ID {id} not found")
     
     def delete(self, id):
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
         cmd = commands.DeleteOrder(id=id)
         try:
-            handlers.delete_order(uow=uow, cmd=cmd)
+            result = handlers.delete_order(uow=uow, cmd=cmd)
         except:
             return 406, "Integrity violation"   
-        return 200, "OK"
+        
+        if not result:
+            abort(404, description=f"Payer with ID {id} not found")
+
+        return "", 204
 
 
 class Orders(Resource):
@@ -239,19 +262,25 @@ class Orders(Resource):
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
         payer_name = request.args.get('payer_name')
         orders = handlers.get_orders(uow=uow, payer_name=payer_name)
-        return jsonify(orders)
+
+        response_data = schemas.OrderListResponse(orders=[schemas.OrderItemResponse(**order) for order in orders])
+
+        return make_response(jsonify(response_data.model_dump(mode='json')), 200)
 
     def post(self):  
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
         if request.is_json:
             try:
-              order_data = models.PostOrder(**request.json)
-            except models.ValidationError as e:
+              order_data = schemas.PostOrder(**request.json)
+            except schemas.ValidationError as e:
               return {'error': str(e)}, 400
             
-            cmd = commands.AddOrder(**order_data.model_dump())
-            messagebus.handle(message=cmd, uow=uow)
-            return "OK", 201
+            order_id = str(uuid.uuid4())
+            cmd = commands.AddOrder(order_id, **order_data.model_dump())
+            [order_dict] = messagebus.handle(message=cmd, uow=uow)
+
+            response_data = schemas.OrderItemResponse(**order_dict)
+            return make_response(jsonify(response_data.model_dump()), 201)
         
         if 'file' not in request.files:
             return 'No file part in the request', 400
@@ -263,9 +292,11 @@ class Orders(Resource):
         cmd = commands.UploadOrders(
             file=file, code_fixed_part='TEST', code_starting_number=0
         )
-        messagebus.handle(message=cmd, uow=uow)
+        [orders] = messagebus.handle(message=cmd, uow=uow)
 
-        return "OK", 201
+        response_data = schemas.OrderListResponse(orders=[schemas.OrderItemResponse(**order) for order in orders])
+
+        return make_response(jsonify(response_data.model_dump(mode='json')), 201)
 
 
 class Invoices(Resource):
@@ -298,12 +329,12 @@ class Pdf(Resource):
         return send_file(pdf_path, as_attachment=True, download_name=pdf_filename, mimetype='application/pdf')
 
 
-api.add_resource(Payer, '/payer/<id>')
-api.add_resource(Payers, '/payer')
-api.add_resource(Order, '/order/<id>')
-api.add_resource(Orders, '/order')
-api.add_resource(Invoices, '/invoice')
-api.add_resource(Pdf, '/pdf')
+api.add_resource(Payer, '/payers/<id>')
+api.add_resource(Payers, '/payers')
+api.add_resource(Order, '/orders/<id>')
+api.add_resource(Orders, '/orders')
+api.add_resource(Invoices, '/invoices')
+api.add_resource(Pdf, '/pdfs')
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080, debug=True)

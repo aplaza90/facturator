@@ -41,23 +41,27 @@ def test_saving_payers(in_memory_session):
 
 
 def test_retrieving_orders(in_memory_session):
+    uuid1 = str(uuid.uuid4())
+    uuid2 = str(uuid.uuid4())
     query = text(
-        "INSERT INTO orders (payer_name, date, quantity, number) VALUES "
-        '("order1", "2024-04-30", 150, "A123"),'
-        '("order2", "2024-05-01", 200, "B456")'
+        f"INSERT INTO orders (id, payer_name, date, quantity, number) VALUES "
+        f"('{uuid1}', 'order1', '2024-04-30', 150, 'A123'),"
+        f"('{uuid2}', 'order2', '2024-05-01', 200, 'B456')"
     )
 
     in_memory_session.execute(query)
     expected = [
         model.InvoiceOrder(
             "order1",
-            date=date(2024, 4, 30),
+            id=uuid1,
+            date='2024-04-30',
             quantity=150,
             number="A123"
         ),
         model.InvoiceOrder(
             "order2",
-            date=date(2024, 5, 1),
+            id=uuid2,
+            date='2024-05-01',
             quantity=200,
             number="B456"
         )
@@ -68,6 +72,7 @@ def test_retrieving_orders(in_memory_session):
 def test_saving_orders(in_memory_session):
     new_order = model.InvoiceOrder(
         "order1",
+        id=str(uuid.uuid4()),
         date=date(2024, 5, 1),
         quantity=200,
         number="B456"
@@ -83,11 +88,12 @@ def test_saving_orders(in_memory_session):
 def test_saving_allocations(in_memory_session):
     order = model.InvoiceOrder(
         "order1",
+        id=str(uuid.uuid4()),
         date=date(2024, 5, 1),
         quantity=200,
         number="B456"
     )
-    payer = model.Payer("payer1")
+    payer = model.Payer(id=str(uuid.uuid4()), name="payer1")
     order.allocate_payer(payer)
     in_memory_session.add(order)
     in_memory_session.commit()

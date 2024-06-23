@@ -80,6 +80,7 @@ sample_payers = [
 def test_add_order():
     uow = FakeUnitOfWork()
     cmd = commands.AddOrder(
+        id=str(uuid.uuid4()),
         payer_name="Luis Sarmiento",
         date="2024-04-30",
         quantity=150,

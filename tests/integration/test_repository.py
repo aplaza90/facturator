@@ -11,6 +11,7 @@ from facturator.adapters.repository_entity_implementation import OrderImplementa
 def test_save_order(in_memory_session):
     order =model.InvoiceOrder(
         "order1",
+        id=str(uuid.uuid4()),
         date=date(2024, 5, 1),
         quantity=200,
         number="B456"

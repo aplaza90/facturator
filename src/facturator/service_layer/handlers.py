@@ -20,6 +20,7 @@ def add_order(
         payer = get_payer_from_name(cmd.payer_name, uow.payers.list_all())
 
         order = model.InvoiceOrder(
+            id=cmd.id,
             payer_name=cmd.payer_name.upper(),
             date=cmd.date,
             quantity=cmd.quantity,
@@ -28,6 +29,7 @@ def add_order(
         order.allocate_payer(payer)
         uow.orders.add(order)
         uow.commit()
+        return order.to_dict()
 
 def get_orders(uow, payer_name):
     with uow:
@@ -48,14 +50,16 @@ def get_order(uow, id):
         query = text("SELECT * FROM orders WHERE id = :id") 
         rows = uow.session.execute(query, {'id': id}).all()
         if rows:
-            orders = [row._asdict() for row in rows]
-            return orders      
+            [order] = [row._asdict() for row in rows]
+            return order      
     
-    return [{'no': 'data'}]
+    return []
 
 def update_order(uow, cmd):
     with uow:
-        order = uow.orders.get_by_id(cmd.id) 
+        order = uow.orders.get_by_id(cmd.id)
+        if not order:
+            return {}
         if cmd.payer_name:
           order.payer_name = cmd.payer_name 
           payer = get_payer_from_name(cmd.payer_name, uow.payers.list_all())
@@ -65,11 +69,17 @@ def update_order(uow, cmd):
         order.number = cmd.number if cmd.number else order.number
         uow.commit()
 
+        return order.to_dict()
+
 def delete_order(uow, cmd):
     with uow:
+        order = uow.orders.get_by_id(cmd.id)
+        if not order:
+            return None
         query_orders = text("DELETE FROM orders WHERE id = :order_id")
         uow.session.execute(query_orders, dict(order_id = cmd.id))
         uow.session.commit()
+        return 'Order deleted succesfully'
 
 
 def add_payer(
@@ -193,6 +203,7 @@ def upload_payment_orders_from_file(cmd, uow):
             associate_number_to_invoice(order, inv_code_generator)
             uow.orders.add(order)
         uow.commit()
+        return [order.to_dict() for order in order_list]
 
 
 

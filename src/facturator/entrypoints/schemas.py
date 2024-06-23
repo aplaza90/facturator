@@ -54,6 +54,15 @@ class PostOrder(BaseModel):
     quantity: float
 
 
+class OrderItemResponse(PostOrder):
+    id: UUID4
+    payer_id: Optional[UUID4]
+
+
+class OrderListResponse(BaseModel):
+    orders: List[OrderItemResponse] = []
+
+
 class PatchOrder(BaseModel):
     model_config = ConfigDict(extra='forbid')
     number: Optional[str] = None

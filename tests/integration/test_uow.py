@@ -75,6 +75,7 @@ def test_uow_can_allocate_payer_into_order(session_factory):
     with uow:
         payers = uow.payers.list_all()
         order = model.InvoiceOrder(
+            id=str(uuid.uuid4()),
             payer_name='pep',
             date=datetime(2022, 1, 1).date(),
             quantity=100,
