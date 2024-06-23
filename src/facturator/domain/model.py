@@ -45,7 +45,7 @@ class Payer:
 
 
 class InvoiceOrder:
-    def __init__(self, payer_name, date, quantity, number=None):
+    def __init__(self, payer_name, date, quantity, number=None, id=None):
         self.payer_name = payer_name
         self.date = date
         self.quantity = quantity

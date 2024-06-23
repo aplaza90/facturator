@@ -169,8 +169,11 @@ class Payers(Resource):
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
         name = request.args.get('name')
         payers = handlers.get_payers(uow, name)
-        
-        return jsonify(payers)
+
+        response_data = models.PayerListResponse(payers=[models.PayerItemResponse(**payer) for payer in payers])
+
+        return make_response(jsonify(response_data.model_dump(mode='json')), 200)
+
 
     def post(self):
         try:
