@@ -10,17 +10,18 @@ if TYPE_CHECKING:
 
 
 def add_order(
-        uow,
-        cmd: commands.AddOrder = None,
+        cmd: commands.AddOrder,
+        uow,  
 ) -> None:
     with uow:
 
-        if not all([cmd.payer_name, cmd.date, cmd.quantity, cmd.number]):
+        if not all([cmd.payer_name, cmd.date, cmd.quantity]):
             raise ValueError("All attributes must be provided")
         payer = get_payer_from_name(cmd.payer_name, uow.payers.list_all())
 
         order = model.InvoiceOrder(
-            payer_name=cmd.payer_name,
+            id=cmd.id,
+            payer_name=cmd.payer_name.upper(),
             date=cmd.date,
             quantity=cmd.quantity,
             number=cmd.number
@@ -28,6 +29,57 @@ def add_order(
         order.allocate_payer(payer)
         uow.orders.add(order)
         uow.commit()
+        return order.to_dict()
+
+def get_orders(uow, payer_name):
+    with uow:
+        if payer_name:
+            query = text("SELECT * FROM orders WHERE payer_name LIKE :payer_name")
+            rows = uow.session.execute(query, dict(payer_name=f"%{payer_name.upper()}%")).all()
+        else:    
+            query = text("SELECT * FROM orders")
+            rows = uow.session.execute(query).all()
+        if rows:
+            orders = [row._asdict() for row in rows]
+            return orders
+
+        return []
+    
+def get_order(uow, id):
+    with uow:
+        query = text("SELECT * FROM orders WHERE id = :id") 
+        rows = uow.session.execute(query, {'id': id}).all()
+        if rows:
+            [order] = [row._asdict() for row in rows]
+            return order      
+    
+    return []
+
+def update_order(uow, cmd):
+    with uow:
+        order = uow.orders.get_by_id(cmd.id)
+        if not order:
+            return {}
+        if cmd.payer_name:
+          order.payer_name = cmd.payer_name 
+          payer = get_payer_from_name(cmd.payer_name, uow.payers.list_all())
+          order.allocate_payer(payer)
+        order.date = cmd.date if cmd.date else order.date
+        order.quantity = cmd.quantity if cmd.quantity else order.quantity
+        order.number = cmd.number if cmd.number else order.number
+        uow.commit()
+
+        return order.to_dict()
+
+def delete_order(uow, cmd):
+    with uow:
+        order = uow.orders.get_by_id(cmd.id)
+        if not order:
+            return None
+        query_orders = text("DELETE FROM orders WHERE id = :order_id")
+        uow.session.execute(query_orders, dict(order_id = cmd.id))
+        uow.session.commit()
+        return 'Order deleted succesfully'
 
 
 def add_payer(
@@ -35,19 +87,66 @@ def add_payer(
         uow,
 ) -> None:
     with uow:
-        complete_address = model.CompleteAddress(
-            cmd.address,
-            cmd.zip_code,
-            cmd.city,
-            cmd.province
+        payer = model.Payer(
+            id=cmd.id,
+            name=cmd.name.upper(),
+            nif=cmd.nif,
+            address=cmd.address,
+            zip_code=cmd.zip_code,
+            city=cmd.city,
+            province=cmd.province
         )
-        uow.payers.add(model.Payer(
-            name=cmd.name,
-            address=complete_address,
-            nif=cmd.nif
-        ))
+        uow.payers.add(payer)
         uow.commit()
+        return payer.to_dict()
 
+def update_payer(uow, cmd):
+    with uow:
+        payer = uow.payers.get_by_id(cmd.id)
+        if not payer:
+            return{}
+        payer.name = cmd.name.upper() if cmd.name else payer.name  
+        payer.nif = cmd.nif if cmd.nif else payer.nif
+        payer.address = cmd.address if cmd.address else payer.address
+        payer.zip_code = cmd.zip_code if cmd.zip_code else payer.zip_code
+        payer.city = cmd.city if cmd.city else payer.city
+        payer.province = cmd.province if cmd.province else payer.province
+        uow.commit()
+        return payer.to_dict()
+
+def delete_payer(uow, cmd):
+    with uow:
+        payer = uow.payers.get_by_id(cmd.id)
+        if not payer:
+            return None
+        query_payers = text("DELETE FROM payers WHERE id = :payer_id")
+        uow.session.execute(query_payers, dict(payer_id = cmd.id))
+        uow.session.commit()
+        return 'Payer deleted succesfully'
+
+def get_payers(uow, name):
+    with uow:
+        if name:
+            query = text("SELECT * FROM payers WHERE name LIKE :name")
+            rows = uow.session.execute(query, dict(name=f"%{name.upper()}%")).all()
+        else:    
+          query = text("SELECT * FROM payers")
+          rows = uow.session.execute(query).all()
+        if rows:
+            payers = [row._asdict() for row in rows]
+            return payers
+
+        return []
+    
+def get_payer(uow, id):
+    with uow:
+        query = text("SELECT * FROM payers WHERE id = :id") 
+        rows = uow.session.execute(query, {'id': id}).all()
+        if rows:
+            [payer] = [row._asdict() for row in rows]
+            return payer      
+        
+        return None         
 
 def get_payer_from_name(name, payers):
     """
@@ -105,47 +204,12 @@ def upload_payment_orders_from_file(cmd, uow):
             associate_number_to_invoice(order, inv_code_generator)
             uow.orders.add(order)
         uow.commit()
+        return [order.to_dict() for order in order_list]
 
 
-def get_payers(uow):
-    with uow:
-        query = text("SELECT * FROM payers")
-        rows = uow.session.execute(query).all()
-        if rows:
-            payers = [row._asdict() for row in rows]
-            return payers
 
-        return [{'no': 'data'}]
-    
-def get_payer(uow, name):
-    with uow:
-        query = text("SELECT * FROM payers WHERE name = :name") 
-        rows = uow.session.execute(query, {'name': name}).all()
-        if rows:
-            payers = [row._asdict() for row in rows]
-            return payers      
-        
-        return [{'no': 'data'}]
 
-def get_orders(uow):
-    with uow:
-        query = text("SELECT * FROM orders")
-        rows = uow.session.execute(query).all()
-        if rows:
-            orders = [row._asdict() for row in rows]
-            return orders
 
-        return [{'no': 'data'}]
-    
-def get_order(uow, number):
-    with uow:
-        query = text("SELECT * FROM orders WHERE number = :number") 
-        rows = uow.session.execute(query, {'number': number}).all()
-        if rows:
-            orders = [row._asdict() for row in rows]
-            return orders      
-    
-    return [{'no': 'data'}]
 
 
 def get_order_context(uow, order_number):

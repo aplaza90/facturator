@@ -1,11 +1,12 @@
 import datetime
+import uuid
 
 import pytest
 
 from facturator.adapters import repository
 from facturator.adapters.repository_entity_implementation import OrderImplementation, PayerImplementation
 from facturator.service_layer import handlers, unit_of_work
-from facturator.domain.model import Payer, CompleteAddress, InvoiceOrder
+from facturator.domain.model import Payer, InvoiceOrder
 from facturator.domain import commands
 
 
@@ -20,6 +21,9 @@ class FakeRepository(repository.AbstractRepository):
     def get(self, value):
         param = self.entity_implementation.get_filter_parameter()
         return next(b for b in self._entities if getattr(b, param) == value)
+    
+    def get_by_id(self, id):
+        pass
 
     def list_all(self):
         return list(self._entities)
@@ -41,36 +45,48 @@ class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
 sample_payers = [
     Payer(
         name="Luis Sarmiento",
-        address=CompleteAddress("123 Main St", "12345", "Anytown", "CA"),
-        nif="123456789A"
+        nif="123456789A",
+        address="123 Main St", 
+        zip_code="12345",
+        city="Anytown",
+        province="CA"
     ),
     Payer(
         name="Luis Serrano",
-        address=CompleteAddress("456 Oak St", "67890", "Othertown", "NY"),
-        nif="987654321B"
+        nif="123456789A",
+        address="123 Main St", 
+        zip_code="12345",
+        city="Anytown",
+        province="CA"
     ),
     Payer(
         name="Luis Moreno",
-        address=CompleteAddress("789 Elm St", "54321", "Somewhere", "TX"),
-        nif="567890123C"
+        nif="123456789A",
+        address="123 Main St", 
+        zip_code="12345",
+        city="Anytown",
+        province="CA"
     ),
     Payer(
         name="Luis Moron",
-        address=CompleteAddress("101 Pine St", "98765", "Nowhere", "FL"),
-        nif="321098765D"
-    ),
+        nif="123456789A",
+        address="123 Main St", 
+        zip_code="12345",
+        city="Anytown",
+        province="CA"
+    )
 ]
-
 
 def test_add_order():
     uow = FakeUnitOfWork()
     cmd = commands.AddOrder(
+        id=str(uuid.uuid4()),
         payer_name="Luis Sarmiento",
-        date=datetime.date(2024, 4, 30),
+        date="2024-04-30",
         quantity=150,
         number="A123"
     )
-    handlers.add_order(uow, cmd)
+    handlers.add_order(cmd, uow)
     assert uow.orders.get("A123") is not None
     assert uow.committed
 
@@ -78,6 +94,7 @@ def test_add_order():
 def test_add_payer():
     uow = FakeUnitOfWork()
     cmd = commands.AddPayer(
+        id=str(uuid.uuid4()),
         name='payer1',
         nif='1111',
         address='test_addr',
@@ -90,7 +107,7 @@ def test_add_payer():
         cmd=cmd,
         uow=uow,
     )
-    assert uow.payers.get('payer1') is not None
+    assert uow.payers.get('payer1'.upper()) is not None
     assert uow.committed
 
 

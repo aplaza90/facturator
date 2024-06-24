@@ -1,6 +1,7 @@
 # pylint: disable=protected-access
 from sqlalchemy import text
 from datetime import date
+import uuid
 
 from facturator.domain import model
 from facturator.adapters import repository
@@ -10,6 +11,7 @@ from facturator.adapters.repository_entity_implementation import OrderImplementa
 def test_save_order(in_memory_session):
     order =model.InvoiceOrder(
         "order1",
+        id=str(uuid.uuid4()),
         date=date(2024, 5, 1),
         quantity=200,
         number="B456"
@@ -57,14 +59,22 @@ def test_add_and_list_payer(in_memory_session):
 
     sample_payers = [
         model.Payer(
-            name="Luis Sarmiento",
-            address=model.CompleteAddress("123 Main St", "12345", "Anytown", "CA"),
-            nif="123456789A"
+        id=str(uuid.uuid4()),  
+        name="Luis Sarmiento",
+        nif="123456789A",
+        address="123 Main St", 
+        zip_code="12345",
+        city="Anytown",
+        province="CA"
         ),
         model.Payer(
-            name="Luis Serrano",
-            address=model.CompleteAddress("456 Oak St", "67890", "Othertown", "NY"),
-            nif="987654321B"
+        id=str(uuid.uuid4()),  
+        name="Luis Serrano",
+        nif="123456789A",
+        address="123 Main St", 
+        zip_code="12345",
+        city="Anytown",
+        province="CA"
         )
     ]
     payer_repo = repository.SqlAlchemyRepository(

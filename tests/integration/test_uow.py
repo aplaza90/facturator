@@ -1,6 +1,7 @@
 from datetime import datetime
 from sqlalchemy import text
 import pytest
+import uuid
 
 import random
 import string
@@ -22,45 +23,35 @@ def generate_random_payer_data(name):
     # Create and return the dictionary
     data = {
         "name": name,
+        "nif": nif,
         "address": address,
         "zip_code": zip_code,
         "city": city,
-        "province": province,
-        "nif": nif
+        "province": province
     }
     return data
 
 
-def insert_address(session, address, zip_code, city, province):
+def insert_payer(session, name, nif, address, zip_code, city, province):
+    id = str(uuid.uuid4())
     result = session.execute(
-        orm.addresses.insert().values(
+        orm.payers.insert().values(
+            id = id,
+            name=name,
+            nif=nif,
             address=address,
             zip_code=zip_code,
             city=city,
             province=province
         )
     )
-    inserted_id = result.inserted_primary_key[0]
-    return inserted_id
-
-
-def insert_payer(session, name, address, nif):
-    result = session.execute(
-        orm.payers.insert().values(
-            name=name,
-            address_id=address,
-            nif=nif
-        )
-    )
-    inserted_id = result.inserted_primary_key[0]
-    return inserted_id
+    return id
 
 
 def insert_payer_complete(
         name,  address, zip_code, city, province, nif, session
 ):
-    address_id = insert_address(session, address, zip_code, city, province)
-    payer_id = insert_payer(session, name, address_id, nif)
+    payer_id = insert_payer(session, name, nif, address, zip_code, city, province)
     return payer_id
 
 
@@ -84,6 +75,7 @@ def test_uow_can_allocate_payer_into_order(session_factory):
     with uow:
         payers = uow.payers.list_all()
         order = model.InvoiceOrder(
+            id=str(uuid.uuid4()),
             payer_name='pep',
             date=datetime(2022, 1, 1).date(),
             quantity=100,
@@ -96,7 +88,6 @@ def test_uow_can_allocate_payer_into_order(session_factory):
         handlers.associate_number_to_invoice(order, order_code_gen)
         uow.orders.add(order)
         uow.commit()
-
     assert get_allocated_payer_id(session, 'pep') == 'Pepe'
 
 

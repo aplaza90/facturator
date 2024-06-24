@@ -1,6 +1,6 @@
 import re
 import pandas as pd
-import locale
+import uuid
 from abc import ABC, abstractmethod
 
 from facturator.domain.model import InvoiceOrder
@@ -66,10 +66,16 @@ class ExcelFileHandler(AbstractFileHandler):
         return data
 
     @staticmethod
+    def convert_to_float(value):
+        value = value.replace('.', '')
+        value = value.replace(',', '.')
+        return float(value)
+
+    @staticmethod
     def _process_dates_and_numbers(data):
         data['Fecha Operaci?n'] = pd.to_datetime(data['Fecha Operaci?n'], dayfirst=True)
         data['Fecha Valor'] = pd.to_datetime(data['Fecha Valor'], dayfirst=True)
-        data['Importe'] = data['Importe'].apply(locale.atof) / 100
+        data['Importe'] = data['Importe'].apply(ExcelFileHandler.convert_to_float) / 100
         return data
 
     def _get_df_from_excel(self):
@@ -92,6 +98,7 @@ class ExcelFileHandler(AbstractFileHandler):
         for index, row in grouped_df.iterrows():
             # Create an InvoiceOrder object for each row
             invoice_order = InvoiceOrder(
+                id=str(uuid.uuid4()),
                 payer_name=index,
                 date=row['Latest Date'],
                 quantity=row['Total Amount'],
