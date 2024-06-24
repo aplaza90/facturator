@@ -10,7 +10,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import uuid
 import yaml
-from flasgger import Swagger
+import json
+from flask_swagger_ui import get_swaggerui_blueprint
 
 from facturator import config
 from facturator.adapters import orm
@@ -19,7 +20,6 @@ from facturator.service_layer import unit_of_work, messagebus
 from facturator.service_layer.invoice_generator import invoice
 from facturator.domain import commands, model
 from facturator.entrypoints import decorators, schemas
-from facturator.entrypoints.config import BaseConfig
 
 orm.start_mappers()
 engine = create_engine(config.get_postgres_uri())
@@ -29,11 +29,28 @@ app = Flask(__name__, template_folder='templates')
 CORS(app)
 
 api = Api(app)
-app.config.from_object(BaseConfig)
 
-
+#Swagger configuration
 api_spec = yaml.safe_load((Path(__file__).parent / "api_spec.yaml").read_text())
-swagger = Swagger(app, template=api_spec)    
+@app.route('/swagger.json')
+def swagger():
+    return jsonify(api_spec)
+
+SWAGGER_URL = '/apidocs'
+API_URL = '/swagger.json'
+
+swaggerui_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={
+        'app_name': "Your Flask App"
+    }
+)
+app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
+
+
+
+
 
 @app.route('/signup', methods=['POST'])
 def signup_user():
