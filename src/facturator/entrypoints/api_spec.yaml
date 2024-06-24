@@ -1,0 +1,549 @@
+openapi: 3.0.3
+
+info:
+  title: Facturator API
+  description: API that allows to manage the CRUD operations of resources in facturator
+  version: 1.0.0
+
+servers:
+  - url: http://127.0.0.1:5005
+    description: URL for local development and testing
+
+paths:
+  /payers/{id}:
+
+    get:
+      tags:
+        - Payers
+      summary: Get the payer info by the ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The payer ID
+          example: 123e4567-e89b-12d3-a456-426614174000  
+      responses:
+        '200':
+          description: A payer object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayerItemResponse'
+        '404':
+          description: Payer not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+    patch:
+      tags:
+        - Payers
+      summary: Update a payer partially by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchPayer'
+      responses:
+        '200':
+          description: Updated payer object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayerItemResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Payer not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+    put:
+      tags:
+        - Payers
+      summary: Update a payer by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostPayer'
+      responses:
+        '200':
+          description: Updated payer object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayerItemResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Payer not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+    delete:
+      tags:
+        - Payers
+      summary: Delete a payer by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Payer deleted successfully
+        '404':
+          description: Payer not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+        '406':
+          description: Integrity violation
+
+  /payers:
+    get:
+      tags:
+        - Payers
+      summary: Get list of payers
+      parameters:
+        - name: name
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of payers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayerListResponse'
+
+    post:
+      tags:
+        - Payers
+      summary: Create a new payer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostPayer'
+            examples:
+              example-1:
+                summary: A typical payer to add
+                value:
+                  name: "Some Name"
+                  nif: "12345678A"
+                  address: "Some St. Some Number"
+                  city: "Madrid"
+                  province: "Madrid"
+                  zip_code: "12345"  
+      responses:
+        '201':
+          description: Payer created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayerItemResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string  
+  
+  /orders/{id}:
+    get:
+      tags:
+        - Orders
+      summary: Get an order by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: An order object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderItemResponse'
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+
+    patch:
+      tags:
+        - Orders
+      summary: Update an order partially by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchOrder'
+      responses:
+        '200':
+          description: Updated order object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderItemResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+
+    put:
+      tags:
+        - Orders
+      summary: Update an order by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostOrder'
+      responses:
+        '200':
+          description: Updated order object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderItemResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+
+    delete:
+      tags:
+        - Orders
+      summary: Delete an order by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Order deleted successfully
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+        '406':
+          description: Integrity violation
+
+  /orders:
+    get:
+      tags:
+          - Orders
+      summary: Get Orders
+      description: Retrieve a list of orders, optionally filtered by payer name.
+      parameters:
+        - name: payer_name
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of orders
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderListResponse'
+    post:
+      tags:
+        - Orders
+      summary: Create Order
+      description: Create a new order with JSON data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostOrder'
+      responses:
+        '201':
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderItemResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /orders/file:
+    post:
+      tags:
+        - Orders
+      summary: Upload Orders File
+      description: Upload a file to create multiple orders.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Orders created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderListResponse'
+        '400':
+          description: Error in file upload
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+components:
+  schemas:
+    PatchPayer:
+      type: object
+      properties:
+        name:
+          type: string
+        nif:
+          type: string
+        address:
+          type: string
+        zip_code:
+          type: string
+        city:
+          type: string
+        province:
+          type: string
+      additionalProperties: false      
+
+    PostPayer:
+      type: object
+      properties:
+        name:
+          type: string
+        nif:
+          type: string
+        address:
+          type: string
+        zip_code:
+          type: string
+        city:
+          type: string
+        province:
+          type: string  
+      required:
+        - name
+        - nif
+        - address
+        - zip_code
+        - city
+        - province    
+      additionalProperties: false    
+
+    PayerItemResponse:
+      allOf:
+        - $ref: '#/components/schemas/PostPayer'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid 
+          required:
+            - id  
+
+    PayerListResponse:
+      type: object
+      properties:
+        payers:
+          type: array
+          items:
+            $ref: '#/components/schemas/PayerItemResponse'
+      required:
+        - payers      
+
+    PostOrder:
+      type: object
+      properties:
+        number:
+          type: string
+        payer_name:
+          type: string
+        date:
+          type: string
+        quantity:
+          type: number
+          format: float
+      required:
+        - number
+        - payer_name
+        - date
+        - quantity
+      additionalProperties: false
+
+    OrderItemResponse:
+      allOf:
+        - $ref: '#/components/schemas/PostOrder'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            payer_id:
+              type: string
+              format: uuid
+          required:
+            - id
+
+    OrderListResponse:
+      type: object
+      properties:
+        orders:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemResponse'
+      required:
+        - orders
+
+    PatchOrder:
+      type: object
+      properties:
+        number:
+          type: string
+        payer_name:
+          type: string
+        date:
+          type: string
+        quantity:
+          type: number
+          format: float
+      additionalProperties: false
+
+
