@@ -65,7 +65,7 @@ def test_store_orders(setup_orders):
     files = {'file': open(file_path, 'rb')}
 
     url = config.get_api_url()
-    response = requests.post(f"{url}/orders", files=files)
+    response = requests.post(f"{url}/orders/file", files=files)
     assert response.status_code == 201
 
 

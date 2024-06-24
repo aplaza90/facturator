@@ -346,6 +346,85 @@ paths:
         '406':
           description: Integrity violation
 
+  /orders:
+    get:
+      tags:
+          - Orders
+      summary: Get Orders
+      description: Retrieve a list of orders, optionally filtered by payer name.
+      parameters:
+        - name: payer_name
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of orders
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderListResponse'
+    post:
+      tags:
+        - Orders
+      summary: Create Order
+      description: Create a new order with JSON data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostOrder'
+      responses:
+        '201':
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderItemResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /orders/file:
+    post:
+      tags:
+        - Orders
+      summary: Upload Orders File
+      description: Upload a file to create multiple orders.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Orders created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderListResponse'
+        '400':
+          description: Error in file upload
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
 components:
   schemas:
     PatchPayer:

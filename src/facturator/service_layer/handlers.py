@@ -87,8 +87,7 @@ def add_payer(
         uow,
 ) -> None:
     with uow:
-        
-        uow.payers.add(model.Payer(
+        payer = model.Payer(
             id=cmd.id,
             name=cmd.name.upper(),
             nif=cmd.nif,
@@ -96,8 +95,10 @@ def add_payer(
             zip_code=cmd.zip_code,
             city=cmd.city,
             province=cmd.province
-        ))
+        )
+        uow.payers.add(payer)
         uow.commit()
+        return payer.to_dict()
 
 def update_payer(uow, cmd):
     with uow:

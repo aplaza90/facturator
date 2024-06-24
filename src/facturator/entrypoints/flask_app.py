@@ -10,7 +10,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import uuid
 import yaml
-import json
 from flask_swagger_ui import get_swaggerui_blueprint
 
 from facturator import config
@@ -30,7 +29,7 @@ CORS(app)
 
 api = Api(app)
 
-#Swagger configuration
+#Swagger UI configuration
 api_spec = yaml.safe_load((Path(__file__).parent / "api_spec.yaml").read_text())
 @app.route('/swagger.json')
 def swagger():
@@ -47,9 +46,6 @@ swaggerui_blueprint = get_swaggerui_blueprint(
     }
 )
 app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
-
-
-
 
 
 @app.route('/signup', methods=['POST'])
@@ -206,9 +202,9 @@ class Payers(Resource):
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
         payer_id=str(uuid.uuid4())
         cmd = commands.AddPayer(id=payer_id, **payer_data.model_dump())
-        messagebus.handle(message=cmd, uow=uow)
+        [payer_dict] = messagebus.handle(message=cmd, uow=uow)
 
-        response_data = schemas.PayerItemResponse(id=payer_id, **payer_data.model_dump())
+        response_data = schemas.PayerItemResponse(**payer_dict)
         return make_response(jsonify(response_data.model_dump()), 201)
 
 
@@ -286,19 +282,22 @@ class Orders(Resource):
 
     def post(self):  
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
-        if request.is_json:
-            try:
-              order_data = schemas.PostOrder(**request.json)
-            except schemas.ValidationError as e:
-              return {'error': str(e)}, 400
-            
-            order_id = str(uuid.uuid4())
-            cmd = commands.AddOrder(order_id, **order_data.model_dump())
-            [order_dict] = messagebus.handle(message=cmd, uow=uow)
-
-            response_data = schemas.OrderItemResponse(**order_dict)
-            return make_response(jsonify(response_data.model_dump()), 201)
+        try:
+          order_data = schemas.PostOrder(**request.json)
+        except schemas.ValidationError as e:
+          return {'error': str(e)}, 400
         
+        order_id = str(uuid.uuid4())
+        cmd = commands.AddOrder(order_id, **order_data.model_dump())
+        [order_dict] = messagebus.handle(message=cmd, uow=uow)
+
+        response_data = schemas.OrderItemResponse(**order_dict)
+        return make_response(jsonify(response_data.model_dump()), 201)
+
+
+class OrdersFile(Resource):
+    def post(self):
+        uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
         if 'file' not in request.files:
             return 'No file part in the request', 400
 
@@ -350,6 +349,7 @@ api.add_resource(Payer, '/payers/<id>')
 api.add_resource(Payers, '/payers')
 api.add_resource(Order, '/orders/<id>')
 api.add_resource(Orders, '/orders')
+api.add_resource(OrdersFile, '/orders/file')
 api.add_resource(Invoices, '/invoices')
 api.add_resource(Pdf, '/pdfs')
 
