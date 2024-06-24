@@ -8,7 +8,6 @@ RUN apt-get update && \
 
 COPY requirements.txt /tmp
 RUN pip install -r /tmp/requirements.txt
-RUN pip install flask-cors
 
 RUN mkdir -p /src
 COPY src/ /src/

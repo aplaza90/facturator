@@ -7,10 +7,11 @@ from facturator.service_layer.invoice_generator import invoice
 def test_generate_context():
     payer = model.Payer(
         name="test_name",
-        address=model.CompleteAddress(
-            "test ad", "123", "test_cty", "TS"
-        ),
-        nif="12A"
+        nif="12A",
+        address="test ad",
+        zip_code="123",
+        city="test_cty",
+        province="TS"
     )
 
     order = model.InvoiceOrder(
@@ -26,18 +27,22 @@ def test_generate_context():
         'invoice_date': datetime.date(2024, 4, 30),
         'client_name': 'test_name',
         'client_address': 'test ad',
+        "client_zip_code": "123",
         'client_city': 'test_cty',
+        "client_province": "TS",
         'client_nif': '12A',
-        'professional_name': 'Some Professional',
-        'professional_address': '5678 Some Avenue',
-        'professional_city': 'Almendralejo, SP',
-        'professional_nif': '987654321',
-        'professional_email': 'some.pro@example.com',
+        "professional_name": "SOME PROF",
+        "professional_address": "Some st, some av",
+        "professional_zip_code": "34567",
+        "professional_city": "Some city",
+        "professional_province": "some town",
+        "professional_nif": "1234567",
+        "professional_email": "example@gmail.com",
         'order_lines': [{'units': 1.0, 'price': 50, 'subtotal': 50.0}],
         'total_bi': '50€',
-        'discount_qty': '0.00€',
-        'iva_qty': '0.00€',
-        'irpf_qty': '0.00€',
+        'discount_qty': '50€',
+        'iva_qty': '50€',
+        'irpf_qty': '50€',
         'Total_a_pagar': '50€',
         'logo_path': ''
     }

@@ -9,6 +9,7 @@ class Command:
 
 @dataclass
 class AddPayer(Command):
+    id: str
     name: str
     nif: str
     address: str
@@ -16,14 +17,39 @@ class AddPayer(Command):
     city: str
     province: str
 
+@dataclass
+class UpdatePayer(Command):
+    id: int
+    name: str = None
+    nif: str = None
+    address: str = None
+    zip_code: str = None
+    city: str = None
+    province: str = None   
+
+@dataclass
+class DeletePayer(Command):
+    id: int     
 
 @dataclass
 class AddOrder(Command):
+    id: str
     payer_name: str
-    date: datetime.date
+    date: str
     quantity: float
-    number: str
+    number: str = None
 
+@dataclass
+class UpdateOrder(Command):
+    id: int
+    payer_name: str = None
+    date: str = None
+    quantity: float = None
+    number: str = None  
+
+@dataclass
+class DeleteOrder(Command):
+    id: int
 
 @dataclass
 class UploadOrders(Command):

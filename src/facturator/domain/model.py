@@ -1,10 +1,28 @@
 
+class User:
+    def __init__(
+            self, username, public_id, nif, address, zip_code, city, province, email, password
+    ):
+        self.username = username
+        self.public_id = public_id
+        self.nif = nif
+        self.address = address
+        self.zip_code = zip_code
+        self.city = city
+        self.province = province
+        self.email = email
+        self.password = password
+
 
 class Payer:
-    def __init__(self, name, address=None, nif=None):
+    def __init__(self, id=None, name=None, nif=None, address=None, zip_code=None, city=None, province=None):
+        self.id = id
         self.name = name
-        self.address = address
         self.nif = nif
+        self.address = address
+        self.zip_code = zip_code
+        self.city = city
+        self.province = province
 
     def __str__(self):
         return f"the payer is {self.name}"
@@ -14,10 +32,22 @@ class Payer:
 
     def __hash__(self):
         return hash(self.name)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'nif': self.nif,
+            'address': self.address,
+            'zip_code': self.zip_code,
+            'city': self.city,
+            'province': self.province
+        }
 
 
 class InvoiceOrder:
-    def __init__(self, payer_name, date, quantity, number=None):
+    def __init__(self, payer_name, date, quantity, number=None, id=None):
+        self.id = id
         self.payer_name = payer_name
         self.date = date
         self.quantity = quantity
@@ -38,7 +68,17 @@ class InvoiceOrder:
         )
 
     def __hash__(self):
-        return hash(self.payer_name)
+        return hash((self.payer_name, self.date))
+    
+    def to_dict(self):
+      return {
+          'id': self.id,
+          'payer_name': self.payer_name,
+          'date': str(self.date),
+          'quantity': self.quantity,
+          'number': self.number, 
+          'payer_id': self._payer.id if self._payer else None
+      }
 
     @staticmethod
     def calculate_lines(qty):
@@ -70,26 +110,10 @@ class InvoiceOrder:
         self._payer = payer
 
     @property
-    def allocated_payer(self):
+    def payer(self):
         return self._payer
 
     @property
     def lines(self):
         return self.calculate_lines(self.quantity)
-
-
-class CompleteAddress:
-    def __init__(self, address, zip_code, city, province):
-        self.address = address
-        self.zip_code = zip_code
-        self.city = city
-        self.province = province
-
-    def __eq__(self, other):
-        if not isinstance(other, CompleteAddress):
-            return False
-
-        return (self.address.lower() == other.address.lower() and
-                self.zip_code == other.zip_code and
-                self.city.lower() == other.city.lower() and
-                self.province.lower() == other.province.lower())
+    
