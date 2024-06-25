@@ -22,11 +22,21 @@ class FakeRepository(repository.AbstractRepository):
         param = self.entity_implementation.get_filter_parameter()
         return next(b for b in self._entities if getattr(b, param) == value)
     
-    def get_by_id(self, id):
-        pass
+    def get_by_id(self, element_id):
+        try:
+            return next(entity for entity in self._entities if getattr(entity, 'id') == element_id)
+        except StopIteration:
+            return None
 
     def list_all(self):
         return list(self._entities)
+    
+    def delete_by_id(self, id: str):
+        entity = self.get_by_id(id)
+        if entity:
+            self._entities.remove(entity)
+        else:
+            raise ValueError(f"Entity with id {id} does not exist")
 
 
 class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
@@ -89,6 +99,74 @@ def test_add_order():
     handlers.add_order(cmd, uow)
     assert uow.orders.get("A123") is not None
     assert uow.committed
+
+
+def test_add_then_update_order():
+    uow = FakeUnitOfWork()
+    order_id = str(uuid.uuid4())
+    cmd = commands.AddOrder(
+        id=order_id,
+        payer_name="original_name",
+        date="2024-04-30",
+        quantity=150,
+        number="TEST_NUMBER"
+    )
+    handlers.add_order(cmd, uow)
+    
+    original_order = uow.orders.get("TEST_NUMBER")
+    assert original_order.payer_name == "original_name".upper()
+    assert uow.committed
+    
+    update_cmd = commands.UpdateOrder(
+        id=order_id,
+        payer_name="modified_name",
+        date="2024-04-30",
+        quantity=150,
+        number="TEST_NUMBER"
+    )
+    handlers.update_order(cmd=update_cmd, uow=uow)
+    order = uow.orders.get("TEST_NUMBER")
+    assert order.payer_name == "modified_name".upper()
+
+
+def test_add_the_get_order():
+    uow = FakeUnitOfWork()
+    order_id = str(uuid.uuid4())
+    cmd = commands.AddOrder(
+        id=order_id,
+        payer_name="payer_name",
+        date="2024-04-30",
+        quantity=150,
+        number="TEST_GET_BY_ID"
+    )
+    handlers.add_order(cmd, uow)
+
+    retrieved_order = handlers.get_order(uow=uow, id = order_id)
+    assert retrieved_order.get('number') == "TEST_GET_BY_ID"
+
+
+def test_add_order_and_then_delete_it():
+    uow = FakeUnitOfWork()
+    order_id = str(uuid.uuid4())
+    cmd = commands.AddOrder(
+        id=order_id,
+        payer_name="original_name",
+        date="2024-04-30",
+        quantity=150,
+        number="TEST_DELETE"
+    )
+    handlers.add_order(cmd, uow)
+    
+    original_order = uow.orders.get("TEST_DELETE")
+    assert original_order.payer_name == "original_name".upper()
+    assert uow.committed
+    
+    delete_cmd = commands.DeleteOrder(id=order_id)
+
+    handlers.delete_order(cmd=delete_cmd, uow=uow)
+    assert not uow.orders.get_by_id(order_id)
+    assert uow.committed
+    
 
 
 def test_add_payer():

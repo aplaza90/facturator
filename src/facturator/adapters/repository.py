@@ -7,15 +7,19 @@ class AbstractRepository(ABC):
     entity_implementation: EntityImplementation
 
     @abstractmethod
-    def add(self, order: model.InvoiceOrder):
+    def add(self, entity):
         raise NotImplementedError
 
     @abstractmethod
-    def get(self, name: str) -> model.InvoiceOrder:
+    def get(self, prop: str):
         raise NotImplementedError
 
     @abstractmethod
-    def get_by_id(self, id: int) -> model.InvoiceOrder:
+    def get_by_id(self, id: str):
+        raise NotImplementedError
+    
+    @abstractmethod
+    def delete_by_id(self, id: str):
         raise NotImplementedError
 
 
@@ -33,7 +37,7 @@ class SqlAlchemyRepository(AbstractRepository):
             self.entity_implementation.get_entity_class()
         ).filter_by(**filter_by).one()
 
-    def get_by_id(self, id: int):
+    def get_by_id(self, id: str):
         return self.session.query(
             self.entity_implementation.get_entity_class()
         ).get(id)
@@ -43,5 +47,11 @@ class SqlAlchemyRepository(AbstractRepository):
             self.entity_implementation.get_entity_class()
         ).all()
 
-
+    def delete_by_id(self, id: str):
+        entity_class = self.entity_implementation.get_entity_class()
+        entity = self.session.query(entity_class).get(id)
+        if entity:
+            self.session.delete(entity)
+        else:
+            raise ValueError(f"Entity with id {id} does not exist")
 
