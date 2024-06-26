@@ -54,7 +54,7 @@ app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
 def signup_user():
     try:
         signup_data = schemas.SignUp(**request.json)
-    except ValidationError as e:
+    except ValidationError:
         return {'error': 'Invalid Signup data'}, 400
     session = get_session()
     hashed_password = generate_password_hash(signup_data.password, method='pbkdf2:sha256')
@@ -76,15 +76,15 @@ def signup_user():
         session.commit() 
 
         return jsonify({'message': 'registered successfully'}), 201
-    else:
-        return jsonify({"message": "User already exists!"}), 409
+
+    return jsonify({"message": "User already exists!"}), 409
 
 
 @app.route('/login', methods=['POST'])
 def login():
     try:
         login_data = schemas.LogIn(**request.json)
-    except ValidationError as e:
+    except ValidationError:
         return {'error': 'Invalid LogIn data'}, 400
     
     session = get_session()
@@ -97,7 +97,7 @@ def login():
             {
                 'public_id': user.public_id,
                 'exp': datetime.utcnow() + timedelta(minutes=30)
-            }, 
+            },
             config.get_app_secret_hey(), 
             'HS256'
         )
@@ -149,7 +149,6 @@ class Payer(Resource):
         
         abort(404, description=f"Payer with ID {id} not found")
 
-        
     def put(self, id):
         try:
             payer_data = schemas.PostPayer(**request.json)
@@ -174,7 +173,7 @@ class Payer(Resource):
         cmd = commands.DeletePayer(id=id)
         try:
             result = handlers.delete_payer(uow=uow, cmd=cmd)
-        except:
+        except Exception:
             return "Integrity violation", 406   
         
         if not result:
@@ -194,7 +193,6 @@ class Payers(Resource):
 
         return make_response(jsonify(response_data.model_dump(mode='json')), 200)
 
-
     def post(self):
         try:
             payer_data = schemas.PostPayer(**request.json)
@@ -211,6 +209,7 @@ class Payers(Resource):
 
 
 class Order(Resource):
+    
     def get(self, id):
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
         order = handlers.get_order(uow=uow, id=id)
@@ -219,7 +218,6 @@ class Order(Resource):
             return make_response(jsonify(response_data.model_dump()), 200)
         abort(404, description=f"Order with ID {id} not found")
 
-    
     def patch(self, id):
         try:
             order_data = schemas.PatchOrder(**request.json)
@@ -238,7 +236,6 @@ class Order(Resource):
         
         abort(404, description=f"Payer with ID {id} not found")
 
-    
     def put(self, id):
         try:
             order_data = schemas.PostOrder(**request.json)
@@ -263,7 +260,7 @@ class Order(Resource):
         cmd = commands.DeleteOrder(id=id)
         try:
             result = handlers.delete_order(uow=uow, cmd=cmd)
-        except:
+        except Exception:
             return 406, "Integrity violation"   
         
         if not result:
@@ -273,6 +270,7 @@ class Order(Resource):
 
 
 class Orders(Resource):
+    
     def get(self):
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
         payer_name = request.args.get('payer_name')
