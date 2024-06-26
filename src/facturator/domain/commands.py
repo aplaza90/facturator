@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from datetime import datetime
 from werkzeug.datastructures import FileStorage
 
 
@@ -19,7 +18,7 @@ class AddPayer(Command):
 
 @dataclass
 class UpdatePayer(Command):
-    id: int
+    id: str
     name: str = None
     nif: str = None
     address: str = None
@@ -29,7 +28,7 @@ class UpdatePayer(Command):
 
 @dataclass
 class DeletePayer(Command):
-    id: int     
+    id: str
 
 @dataclass
 class AddOrder(Command):
@@ -41,7 +40,7 @@ class AddOrder(Command):
 
 @dataclass
 class UpdateOrder(Command):
-    id: int
+    id: str
     payer_name: str = None
     date: str = None
     quantity: float = None
@@ -49,7 +48,7 @@ class UpdateOrder(Command):
 
 @dataclass
 class DeleteOrder(Command):
-    id: int
+    id: str
 
 @dataclass
 class UploadOrders(Command):

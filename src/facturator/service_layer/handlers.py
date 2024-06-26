@@ -34,16 +34,16 @@ def add_order(
 def get_orders(uow, payer_name):
     with uow:
         if payer_name:
-            query = text("SELECT * FROM orders WHERE payer_name LIKE :payer_name")
-            rows = uow.session.execute(query, dict(payer_name=f"%{payer_name.upper()}%")).all()
+            all_orders = uow.orders.list_all()
+            filtered_orders = [
+                order for order in all_orders 
+                if payer_name.upper() in order.payer_name.upper()
+            ]
+            orders = [order.to_dict() for order in filtered_orders]
         else:    
-            query = text("SELECT * FROM orders")
-            rows = uow.session.execute(query).all()
-        if rows:
-            orders = [row._asdict() for row in rows]
-            return orders
+            orders = [order.to_dict() for order in uow.orders.list_all()]
 
-        return []
+        return orders
     
 def get_order(uow, id):
     with uow:
@@ -72,7 +72,7 @@ def delete_order(uow, cmd):
         order = uow.orders.get_by_id(cmd.id)
         if not order:
             return None
-        uow.orders.delete_by_id(id=cmd.id)
+        uow.orders.delete_by_id(element_id=cmd.id)
         uow.commit()
         return 'Order deleted succesfully'
 
@@ -114,34 +114,33 @@ def delete_payer(uow, cmd):
         payer = uow.payers.get_by_id(cmd.id)
         if not payer:
             return None
-        query_payers = text("DELETE FROM payers WHERE id = :payer_id")
-        uow.session.execute(query_payers, dict(payer_id = cmd.id))
-        uow.session.commit()
+        uow.payers.delete_by_id(element_id=cmd.id)
+        uow.commit()
         return 'Payer deleted succesfully'
+
+
+def get_payer(uow, id):
+    with uow:
+        payer = uow.payers.get_by_id(id)
+        if payer:    
+            return payer.to_dict()
+        return None 
+
 
 def get_payers(uow, name):
     with uow:
         if name:
-            query = text("SELECT * FROM payers WHERE name LIKE :name")
-            rows = uow.session.execute(query, dict(name=f"%{name.upper()}%")).all()
-        else:    
-          query = text("SELECT * FROM payers")
-          rows = uow.session.execute(query).all()
-        if rows:
-            payers = [row._asdict() for row in rows]
-            return payers
+            all_payers = uow.payers.list_all()
+            filtered_payers = [
+                payer for payer in all_payers 
+                if name.upper() in payer.name.upper()
+            ]
+            payers = [payer.to_dict() for payer in filtered_payers]
+        else:   
+            payers = [payer.to_dict() for payer in uow.payers.list_all()]
 
-        return []
-    
-def get_payer(uow, id):
-    with uow:
-        query = text("SELECT * FROM payers WHERE id = :id") 
-        rows = uow.session.execute(query, {'id': id}).all()
-        if rows:
-            [payer] = [row._asdict() for row in rows]
-            return payer      
-        
-        return None         
+        return payers
+  
 
 def get_payer_from_name(name, payers):
     """

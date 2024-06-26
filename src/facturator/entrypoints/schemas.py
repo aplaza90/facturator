@@ -1,5 +1,5 @@
-from pydantic import BaseModel, ValidationError, ConfigDict, UUID4
 from typing import Optional, List
+from pydantic import BaseModel, ConfigDict, UUID4
 
 
 class SignUp(BaseModel):

@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 import os
 from pathlib import Path
+import uuid
+
 from flask import Flask, request, jsonify, send_file, after_this_request, make_response, abort
 from flask_cors import CORS
 from flask_restful import Resource, Api
@@ -8,9 +10,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
-import uuid
 import yaml
 from flask_swagger_ui import get_swaggerui_blueprint
+from pydantic import ValidationError
 
 from facturator import config
 from facturator.adapters import orm
@@ -29,7 +31,7 @@ CORS(app)
 
 api = Api(app)
 
-#Swagger UI configuration
+# Swagger UI configuration
 api_spec = yaml.safe_load((Path(__file__).parent / "api_spec.yaml").read_text())
 @app.route('/swagger.json')
 def swagger():
@@ -52,7 +54,7 @@ app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
 def signup_user():
     try:
         signup_data = schemas.SignUp(**request.json)
-    except schemas.ValidationError as e:
+    except ValidationError as e:
         return {'error': 'Invalid Signup data'}, 400
     session = get_session()
     hashed_password = generate_password_hash(signup_data.password, method='pbkdf2:sha256')
@@ -82,7 +84,7 @@ def signup_user():
 def login():
     try:
         login_data = schemas.LogIn(**request.json)
-    except schemas.ValidationError as e:
+    except ValidationError as e:
         return {'error': 'Invalid LogIn data'}, 400
     
     session = get_session()
@@ -132,7 +134,7 @@ class Payer(Resource):
     def patch(self, id):
         try:
             payer_data = schemas.PatchPayer(**request.json)
-        except schemas.ValidationError as e:
+        except ValidationError as e:
             return {'error': str(e)}, 400
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
         cmd = commands.UpdatePayer(
@@ -151,7 +153,7 @@ class Payer(Resource):
     def put(self, id):
         try:
             payer_data = schemas.PostPayer(**request.json)
-        except schemas.ValidationError as e:
+        except ValidationError as e:
             return {'error': str(e)}, 400
         
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
@@ -196,13 +198,13 @@ class Payers(Resource):
     def post(self):
         try:
             payer_data = schemas.PostPayer(**request.json)
-        except schemas.ValidationError as e:
+        except ValidationError as e:
             return {'error': str(e)}, 400
                 
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
         payer_id=str(uuid.uuid4())
         cmd = commands.AddPayer(id=payer_id, **payer_data.model_dump())
-        [payer_dict] = messagebus.handle(message=cmd, uow=uow)
+        payer_dict = messagebus.handle(message=cmd, uow=uow)[0]
 
         response_data = schemas.PayerItemResponse(**payer_dict)
         return make_response(jsonify(response_data.model_dump()), 201)
@@ -221,7 +223,7 @@ class Order(Resource):
     def patch(self, id):
         try:
             order_data = schemas.PatchOrder(**request.json)
-        except schemas.ValidationError as e:
+        except ValidationError as e:
             return {'error': str(e)}, 400
         
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
@@ -240,7 +242,7 @@ class Order(Resource):
     def put(self, id):
         try:
             order_data = schemas.PostOrder(**request.json)
-        except schemas.ValidationError as e:
+        except ValidationError as e:
             return {'error': str(e)}, 400
         
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
@@ -283,13 +285,13 @@ class Orders(Resource):
     def post(self):  
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
         try:
-          order_data = schemas.PostOrder(**request.json)
-        except schemas.ValidationError as e:
-          return {'error': str(e)}, 400
+            order_data = schemas.PostOrder(**request.json)
+        except ValidationError as e:
+            return {'error': str(e)}, 400
         
         order_id = str(uuid.uuid4())
         cmd = commands.AddOrder(order_id, **order_data.model_dump())
-        [order_dict] = messagebus.handle(message=cmd, uow=uow)
+        order_dict = messagebus.handle(message=cmd, uow=uow)[0]
 
         response_data = schemas.OrderItemResponse(**order_dict)
         return make_response(jsonify(response_data.model_dump()), 201)
@@ -308,7 +310,7 @@ class OrdersFile(Resource):
         cmd = commands.UploadOrders(
             file=file, code_fixed_part='TEST', code_starting_number=0
         )
-        [orders] = messagebus.handle(message=cmd, uow=uow)
+        orders = messagebus.handle(message=cmd, uow=uow)[0]
 
         response_data = schemas.OrderListResponse(orders=[schemas.OrderItemResponse(**order) for order in orders])
 

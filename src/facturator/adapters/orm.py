@@ -1,6 +1,5 @@
-from sqlalchemy import Table, MetaData, Column, Integer, String, ForeignKey, Date, Numeric
+from sqlalchemy import Table, MetaData, Column, Integer, String, ForeignKey, Numeric
 from sqlalchemy.orm import relationship, registry
-import uuid
 
 from facturator.domain import model
 
