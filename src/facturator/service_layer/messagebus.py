@@ -59,7 +59,6 @@ def handle_command(
 
 
 EVENT_HANDLERS = {
-    events.RepeatedPayer: [handlers.send_repeated_payer_notification]
 }
 
 

@@ -31,6 +31,7 @@ def add_order(
         uow.commit()
         return order.to_dict()
 
+
 def get_orders(uow, payer_name):
     with uow:
         if payer_name:
@@ -44,13 +45,16 @@ def get_orders(uow, payer_name):
             orders = [order.to_dict() for order in uow.orders.list_all()]
 
         return orders
-    
+
+
 def get_order(uow, id):
     with uow:
         order = uow.orders.get_by_id(id)
         if order:     
             return order.to_dict()
         return None
+
+
 def update_order(uow, cmd):
     with uow:
         order = uow.orders.get_by_id(cmd.id)
@@ -66,6 +70,7 @@ def update_order(uow, cmd):
         uow.commit()
 
         return order.to_dict()
+
 
 def delete_order(uow, cmd):
     with uow:
@@ -95,6 +100,7 @@ def add_payer(
         uow.commit()
         return payer.to_dict()
 
+
 def update_payer(uow, cmd):
     with uow:
         payer = uow.payers.get_by_id(cmd.id)
@@ -108,6 +114,7 @@ def update_payer(uow, cmd):
         payer.province = cmd.province if cmd.province else payer.province
         uow.commit()
         return payer.to_dict()
+
 
 def delete_payer(uow, cmd):
     with uow:
@@ -201,20 +208,9 @@ def upload_payment_orders_from_file(cmd, uow):
         return [order.to_dict() for order in order_list]
 
 
-
-
-
-
-
 def get_order_context(uow, order_number):
     with uow:
         order = uow.orders.get(order_number)
         order_context = invoice.generate_context(order)
         return order_context
 
-
-def send_repeated_payer_notification(
-        event: events.RepeatedPayer,
-        uow: unit_of_work.AbstractUnitOfWork
-):
-    pass
