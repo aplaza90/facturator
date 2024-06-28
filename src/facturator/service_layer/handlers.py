@@ -1,17 +1,11 @@
-from sqlalchemy import text
-from typing import TYPE_CHECKING
-
-from facturator.domain import model, commands, events
-from facturator.service_layer import file_handler, unit_of_work
+from facturator.domain import model, commands
+from facturator.service_layer import file_handler
 from facturator.service_layer.invoice_generator import invoice
-
-if TYPE_CHECKING:
-    from facturator.service_layer import unit_of_work
 
 
 def add_order(
         cmd: commands.AddOrder,
-        uow,  
+        uow,
 ) -> None:
     with uow:
 
@@ -61,9 +55,9 @@ def update_order(uow, cmd):
         if not order:
             return {}
         if cmd.payer_name:
-          order.payer_name = cmd.payer_name.upper() 
-          payer = get_payer_from_name(cmd.payer_name, uow.payers.list_all())
-          order.allocate_payer(payer)
+            order.payer_name = cmd.payer_name.upper() 
+            payer = get_payer_from_name(cmd.payer_name, uow.payers.list_all())
+            order.allocate_payer(payer)
         order.date = cmd.date if cmd.date else order.date
         order.quantity = cmd.quantity if cmd.quantity else order.quantity
         order.number = cmd.number if cmd.number else order.number
@@ -143,7 +137,7 @@ def get_payers(uow, name):
                 if name.upper() in payer.name.upper()
             ]
             payers = [payer.to_dict() for payer in filtered_payers]
-        else:   
+        else:
             payers = [payer.to_dict() for payer in uow.payers.list_all()]
 
         return payers

@@ -261,7 +261,7 @@ class Order(Resource):
         try:
             result = handlers.delete_order(uow=uow, cmd=cmd)
         except Exception:
-            return 406, "Integrity violation"   
+            return 406, "Integrity violation" 
         
         if not result:
             abort(404, description=f"Payer with ID {id} not found")
@@ -338,7 +338,7 @@ class Pdf(Resource):
              try:
                 os.remove(pdf_path)
              except Exception as error:
-                 app.logger.error(f"Error removing or closing downloaded file handle: {error}")
+                 app.logger.error("Error removing or closing downloaded file handle: %s", error)
              return response
 
         invoice.create_pdf(context)

@@ -1,7 +1,6 @@
+import os
 import jinja2
 import pdfkit
-from datetime import datetime
-import os
 
 from facturator.domain import model
 
