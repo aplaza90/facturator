@@ -57,4 +57,3 @@ class SqlAlchemyRepository(AbstractRepository):
             self.session.delete(entity)
         else:
             raise ValueError(f"Entity with id {element_id} does not exist")
-

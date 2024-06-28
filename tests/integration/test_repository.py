@@ -11,7 +11,7 @@ from facturator.adapters.repository_entity_implementation import (
 )
 
 def test_save_order_with_repo_retrieve_with_query(in_memory_session):
-    
+
     order = model.InvoiceOrder(
         payer_name="TEST_PAYER",
         id=str(uuid.uuid4()),
@@ -33,7 +33,7 @@ def test_save_order_with_repo_retrieve_with_query(in_memory_session):
 
 
 def test_save_order_with_query_retrieve_with_repo(in_memory_session):
-    
+
     order_id = str(uuid.uuid4())
     payer_name = "TEST_PAYER"
     order_date = "2022-01-01"

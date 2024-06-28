@@ -12,8 +12,8 @@ def sample_instance():
 
 
 @pytest.mark.parametrize("concept, expected_name", [
-    ("BIZUM DE Pepe CONCEPTO pepazo", "Pepe"),
-    ("TRANSFERENCIA DE Fede Juanra, CONCEPTO algo", "Fede Juanra"),
+    ("BIZUM DE TEST_PAYER CONCEPTO pepazo", "TEST_PAYER"),
+    ("TRANSFERENCIA DE TEST_PAYER_2, CONCEPTO algo", "TEST_PAYER_2"),
     ("Payment via credit card", None),
     ("", None)
 ])
