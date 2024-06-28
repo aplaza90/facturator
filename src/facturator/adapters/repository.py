@@ -41,9 +41,9 @@ class SqlAlchemyRepository(AbstractRepository):
         ).filter_by(**filter_by).one()
 
     def get_by_id(self, element_id: str):
-        return self.session.query(
-            self.entity_implementation.get_entity_class()
-        ).get(element_id)
+        return self.session.get(
+            self.entity_implementation.get_entity_class(), element_id
+        )
 
     def list_all(self):
         return self.session.query(

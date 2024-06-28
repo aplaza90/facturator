@@ -270,7 +270,7 @@ class Order(Resource):
 
 
 class Orders(Resource):
-    
+  
     def get(self):
         uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
         payer_name = request.args.get('payer_name')

@@ -72,28 +72,32 @@ def restart_api():
     time.sleep(0.5)
     wait_for_webapp_to_come_up()
 
+
 def restart_table_in_db(engine, session, table_name, param=""):
     session.execute(text("DROP TABLE {} {}".format(table_name, param)))
     session.commit()
     metadata.create_all(engine)
     session.close()
 
+
 @pytest.fixture
-def setup_orders(postgres_db):
+def setup_orders_postgres(postgres_db):
     session = sessionmaker(postgres_db)()
     restart_table_in_db(engine=postgres_db, session=session, table_name='orders')
     yield
     restart_table_in_db(engine=postgres_db, session=session, table_name='orders')
 
+
 @pytest.fixture
-def setup_payers(postgres_db):
+def setup_payers_postgres(postgres_db):
     session = sessionmaker(bind=postgres_db)()
     restart_table_in_db(engine=postgres_db, session=session, table_name='payers', param="CASCADE")
     yield
     restart_table_in_db(engine=postgres_db, session=session, table_name='payers', param="CASCADE")
-    
+
+
 @pytest.fixture
-def setup_users(postgres_db):
+def setup_users_postgres(postgres_db):
     session = sessionmaker(bind=postgres_db)()
     session.execute(text("DELETE FROM users"))
     session.commit()

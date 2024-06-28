@@ -75,7 +75,7 @@ class InvoiceOrder:
           'id': self.id,
           'payer_name': self.payer_name,
           'date': str(self.date),
-          'quantity': self.quantity,
+          'quantity': str(self.quantity),
           'number': self.number, 
           'payer_id': self._payer.id if self._payer else None
       }

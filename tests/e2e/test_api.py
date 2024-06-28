@@ -41,7 +41,7 @@ def get_login_token():
     return token
 
 
-def test_protected_resource_valid_token(setup_users):
+def test_protected_resource_valid_token(setup_users_postgres):
     url = config.get_api_url()
     login_token = get_login_token()
     cookies = {
@@ -60,7 +60,7 @@ def test_protected_resource_invalid_token():
     assert response.status_code == 401 
 
 
-def test_store_orders(setup_orders):
+def test_store_orders(setup_orders_postgres):
     file_path = Path(__file__).resolve().parent.parent / 'data' / 'movs_feb.xls'
     files = {'file': open(file_path, 'rb')}
 
@@ -69,7 +69,7 @@ def test_store_orders(setup_orders):
     assert response.status_code == 201
 
 
-def test_add_payer(setup_payers):
+def test_add_payer(setup_payers_postgres):
     url = config.get_api_url()
     json_data = {
         "name": "Some Payer",
