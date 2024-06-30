@@ -121,38 +121,9 @@ def protected_resource(current_user):
     return make_response(f'Hello {current_user.username}', 200)
 
 
-class Invoices(Resource):
-    def get(self):
-        uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
-        number = request.args.get('number')
-        context = handlers.get_order_context(uow=uow, order_number=number)
-        return jsonify(context)
-
-
-class Pdf(Resource):
-    def get(self):
-        uow = unit_of_work.SqlAlchemyUnitOfWork(get_session)
-        number = request.args.get('number')
-        context = handlers.get_order_context(uow=uow, order_number=number)
-
-        pdf_dir = Path(__file__).resolve().parent.parent / 'service_layer' / 'invoice_generator'
-        pdf_filename = f'{context["client_name"]}_{context["invoice_date"]}.pdf'
-        pdf_path = os.path.join(pdf_dir, pdf_filename)
-
-        @after_this_request
-        def remove_file(response):
-             try:
-                os.remove(pdf_path)
-             except Exception as error:
-                 app.logger.error("Error removing or closing downloaded file handle: %s", error)
-             return response
-
-        invoice.create_pdf(context)
-        return send_file(pdf_path, as_attachment=True, download_name=pdf_filename, mimetype='application/pdf')
-
-
 from facturator.entrypoints.routes.payer_routes import Payers, Payer
 from facturator.entrypoints.routes.order_routes import Orders, Order, OrdersFile
+from facturator.entrypoints.routes.invoices_routes import Invoices, Pdf
 
 api.add_resource(Payer, '/payers/<id>')
 api.add_resource(Payers, '/payers')
