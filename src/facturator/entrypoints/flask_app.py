@@ -1,11 +1,9 @@
 from datetime import datetime, timedelta
-import os
 from pathlib import Path
 import uuid
 
-from flask import Flask, request, jsonify, send_file, after_this_request, make_response, abort
+from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
-from flask_restful import Resource, Api
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -16,11 +14,9 @@ from pydantic import ValidationError
 
 from facturator import config
 from facturator.adapters import orm
-from facturator.service_layer import handlers
-from facturator.service_layer import unit_of_work, messagebus
-from facturator.service_layer.invoice_generator import invoice
-from facturator.domain import commands, model
+from facturator.domain import model
 from facturator.entrypoints import decorators, schemas
+
 
 orm.start_mappers()
 engine = create_engine(config.get_postgres_uri())
@@ -29,7 +25,9 @@ get_session = sessionmaker(bind=engine)
 app = Flask(__name__, template_folder='templates')
 CORS(app)
 
-api = Api(app)
+from facturator.entrypoints.resources.api import init_api
+init_api(app)
+
 
 # Swagger UI configuration
 api_spec = yaml.safe_load((Path(__file__).parent / "api_spec.yaml").read_text())
@@ -120,18 +118,6 @@ def logout():
 def protected_resource(current_user):
     return make_response(f'Hello {current_user.username}', 200)
 
-
-from facturator.entrypoints.routes.payer_routes import Payers, Payer
-from facturator.entrypoints.routes.order_routes import Orders, Order, OrdersFile
-from facturator.entrypoints.routes.invoices_routes import Invoices, Pdf
-
-api.add_resource(Payer, '/payers/<id>')
-api.add_resource(Payers, '/payers')
-api.add_resource(Order, '/orders/<id>')
-api.add_resource(Orders, '/orders')
-api.add_resource(OrdersFile, '/orders/file')
-api.add_resource(Invoices, '/invoices')
-api.add_resource(Pdf, '/pdfs')
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080, debug=True)
