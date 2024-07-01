@@ -13,7 +13,7 @@ SWAGGER_CONFIG = {
 
 
 def load_api_spec():
-    api_spec_path = Path(__file__).parent.parent / "api_spec.yaml"
+    api_spec_path = Path(__file__).parent / "api_spec.yaml"
     return yaml.safe_load(api_spec_path.read_text())
 
 

@@ -3,9 +3,9 @@ from flask_cors import CORS
 
 from facturator.adapters.database import get_sqlalchemy_session
 from facturator.service_layer.unit_of_work import SqlAlchemyUnitOfWork
-from facturator.entrypoints.resources.api import create_api_blueprint
-from facturator.entrypoints.resources.auth_routes import auth_bp
-from facturator.entrypoints.resources.swagger import create_swagger_blueprint
+from facturator.entrypoints.resources.rest_api.api import create_api_blueprint
+from facturator.entrypoints.resources.auth.auth_routes import auth_bp
+from facturator.entrypoints.resources.rest_api.swagger import create_swagger_blueprint
 
 
 app = Flask(__name__, template_folder='templates')
