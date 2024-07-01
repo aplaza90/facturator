@@ -23,7 +23,7 @@ invoice_order_type = ObjectType("InvoiceOrder")
 def resolve_get_payer(*_, id):
     payer = handlers.get_payer(uow=uow, id=id)
     if payer:
-        return payer.to_dict()
+        return payer
     raise ItemNotFoundError(f'Product with ID {id} not found')
 
 
@@ -79,7 +79,22 @@ def resolve_delete_payer(*_, id):
         raise ItemNotFoundError(f"Payer with ID {id} not found")
     
     except Exception as e:
-        return f"Error deleting payer: {str(e)}"    
+        return f"Error deleting payer: {str(e)}"
+
+@query.field("getOrder")
+def resolve_get_order(*_, id):
+    order = handlers.get_order(uow=uow, id=id, recursive=True)
+    if order:
+        return order
+    raise ItemNotFoundError(f'Product with ID {id} not found')
+
+
+@query.field("getOrders")
+def resolve_get_orders(*_, payer_name=None):
+    orders = handlers.get_orders(uow=uow, payer_name=payer_name, recursive=True)
+    return orders
+
+
 
 
 schema_path = Path(__file__).parent / "schema.graphql"

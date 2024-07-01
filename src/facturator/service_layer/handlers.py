@@ -26,7 +26,7 @@ def add_order(
         return order.to_dict()
 
 
-def get_orders(uow, payer_name):
+def get_orders(uow, payer_name, recursive=False):
     with uow:
         if payer_name:
             all_orders = uow.orders.list_all()
@@ -34,18 +34,29 @@ def get_orders(uow, payer_name):
                 order for order in all_orders 
                 if payer_name.upper() in order.payer_name.upper()
             ]
-            orders = [order.to_dict() for order in filtered_orders]
+            orders = [
+                (
+                    order.to_dict_recursive() if recursive else order.to_dict()
+                ) for order in filtered_orders
+            ]
         else:    
-            orders = [order.to_dict() for order in uow.orders.list_all()]
+            orders = [
+                (
+                    order.to_dict_recursive() if recursive else order.to_dict()
+                ) for order in uow.orders.list_all()
+            ]
 
         return orders
 
 
-def get_order(uow, id):
+def get_order(uow, id, recursive=False):
     with uow:
         order = uow.orders.get_by_id(id)
-        if order:     
-            return order.to_dict()
+        if order:
+            return (
+                order.to_dict_recursive() if recursive
+                else order.to_dict()
+            )
         return None
 
 

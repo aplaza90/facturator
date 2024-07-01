@@ -27,14 +27,35 @@ input UpdatePayerInput {
   province: String
 }
 
+type Order {
+  id: ID!
+  payerName: String!
+  date: String!
+  quantity: Int!
+  number: String
+  payer: Payer
+}
+
+input OrderInput {
+  payerName: String!
+  date: String!
+  quantity: Int!
+  number: String
+}
+
 
 type Query {
   getPayer(id: ID!): Payer
   getPayers(name: String): [Payer!]!
+  getOrder(id: ID!): Order
+  getOrders(payer_name: String): [Order!]!
 }
 
 type Mutation {
   createPayer(input: CreatePayerInput!): Payer
   updatePayer(id: ID!, input: UpdatePayerInput!): Payer
   deletePayer(id: ID!): String
+  createOrder(input: OrderInput!): Order
+  updateOrder(id: ID!, input: OrderInput!): Order
+  deleteOrder(id: ID!): String
 }
