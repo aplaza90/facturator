@@ -1,0 +1,19 @@
+
+type Payer {
+  id: ID!
+  name: String!
+  nif: String
+  address: String
+  zip_code: String
+  city: String
+  province: String
+}
+
+
+type Query {
+  getPayer(id: ID!): Payer
+}
+
+type Mutation {
+  createPayer(name: String!, nif: String, address: String, zip_code: String, city: String, province: String): Payer
+}
