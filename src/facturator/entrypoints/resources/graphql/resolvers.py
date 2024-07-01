@@ -27,20 +27,59 @@ def resolve_get_payer(*_, id):
     raise ItemNotFoundError(f'Product with ID {id} not found')
 
 
+@query.field("getPayers")
+def resolve_get_payers(*_, name=None):
+    payers = handlers.get_payers(uow, name)
+    return payers
+
+
 @mutation.field("createPayer")
-def resolve_create_payer(*_, name, nif, address, zip_code, city, province):
+def resolve_create_payer(*_, input):
     payer_id = str(uuid.uuid4())
     cmd = commands.AddPayer(
         id=payer_id,
-        name=name,
-        nif=nif,
-        address=address,
-        zip_code=zip_code,
-        city=city,
-        province=province
+        name=input.get("name"),
+        nif=input.get("nif"),
+        address=input.get("address"),
+        zip_code=input.get("zip_code"),
+        city=input.get("city"),
+        province=input.get("province")
     )
     payer_dict = messagebus.handle(message=cmd, uow=uow)[0]
     return payer_dict
+
+
+@mutation.field("updatePayer")
+def resolve_update_payer(*_, id, input):
+    try:
+        payer_data = input
+        cmd = commands.UpdatePayer(
+            id=id,
+            **payer_data
+        )
+        payer_dict = handlers.update_payer(uow=uow, cmd=cmd)
+
+        if payer_dict:
+            return payer_dict
+        
+        raise ItemNotFoundError(f"Payer with ID {id} not found")
+    
+    except Exception as e:
+        return f"Error updating payer: {str(e)}"
+
+
+@mutation.field("deletePayer")
+def resolve_delete_payer(*_, id):
+    try:
+        cmd = commands.DeletePayer(id=id)
+        result = handlers.delete_payer(uow=uow, cmd=cmd)
+        if result:
+            return f"Payer with ID {id} deleted successfully"
+        
+        raise ItemNotFoundError(f"Payer with ID {id} not found")
+    
+    except Exception as e:
+        return f"Error deleting payer: {str(e)}"    
 
 
 schema_path = Path(__file__).parent / "schema.graphql"

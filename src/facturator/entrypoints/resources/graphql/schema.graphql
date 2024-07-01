@@ -9,11 +9,32 @@ type Payer {
   province: String
 }
 
+input CreatePayerInput {
+  name: String!
+  nif: String
+  address: String
+  zip_code: String
+  city: String
+  province: String
+}
+
+input UpdatePayerInput {
+  name: String
+  nif: String
+  address: String
+  zip_code: String
+  city: String
+  province: String
+}
+
 
 type Query {
   getPayer(id: ID!): Payer
+  getPayers(name: String): [Payer!]!
 }
 
 type Mutation {
-  createPayer(name: String!, nif: String, address: String, zip_code: String, city: String, province: String): Payer
+  createPayer(input: CreatePayerInput!): Payer
+  updatePayer(id: ID!, input: UpdatePayerInput!): Payer
+  deletePayer(id: ID!): String
 }
