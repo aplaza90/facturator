@@ -4,8 +4,6 @@ import uuid
 
 from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import yaml
@@ -13,20 +11,18 @@ from flask_swagger_ui import get_swaggerui_blueprint
 from pydantic import ValidationError
 
 from facturator import config
-from facturator.adapters import orm
+from facturator.adapters.database import get_session
 from facturator.domain import model
 from facturator.entrypoints import decorators, schemas
+from facturator.service_layer.unit_of_work import SqlAlchemyUnitOfWork
+from facturator.entrypoints.resources.api import init_api
 
 
-orm.start_mappers()
-engine = create_engine(config.get_postgres_uri())
-orm.metadata.create_all(engine)
-get_session = sessionmaker(bind=engine)
 app = Flask(__name__, template_folder='templates')
 CORS(app)
 
-from facturator.entrypoints.resources.api import init_api
-init_api(app)
+
+init_api(app=app, uow=SqlAlchemyUnitOfWork(get_session))
 
 
 # Swagger UI configuration

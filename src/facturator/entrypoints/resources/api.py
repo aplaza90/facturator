@@ -2,15 +2,16 @@ from flask_restful import Api
 from facturator.entrypoints.resources.payer_routes import Payer, Payers
 from facturator.entrypoints.resources.order_routes import Order, Orders, OrdersFile
 from facturator.entrypoints.resources.invoices_routes import Invoices, Pdf
+from facturator.service_layer.unit_of_work import AbstractUnitOfWork
 
 
-def init_api(app):
+def init_api(app, uow: AbstractUnitOfWork):
     api = Api(app)
 
-    api.add_resource(Payer, '/payers/<id>')
-    api.add_resource(Payers, '/payers')
-    api.add_resource(Order, '/orders/<id>')
-    api.add_resource(Orders, '/orders')
-    api.add_resource(OrdersFile, '/orders/file')
-    api.add_resource(Invoices, '/invoices')
-    api.add_resource(Pdf, '/pdfs')
+    api.add_resource(Payer, '/payers/<id>', resource_class_kwargs={'uow': uow})
+    api.add_resource(Payers, '/payers', resource_class_kwargs={'uow': uow})
+    api.add_resource(Order, '/orders/<id>', resource_class_kwargs={'uow': uow})
+    api.add_resource(Orders, '/orders', resource_class_kwargs={'uow': uow})
+    api.add_resource(OrdersFile, '/orders/file', resource_class_kwargs={'uow': uow})
+    api.add_resource(Invoices, '/invoices', resource_class_kwargs={'uow': uow})
+    api.add_resource(Pdf, '/pdfs', resource_class_kwargs={'uow': uow})
