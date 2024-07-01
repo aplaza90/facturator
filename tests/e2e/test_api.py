@@ -24,8 +24,8 @@ def get_login_token():
     )
     assert user_register.status_code == 201, "Signup failed"
     login_data = {
-    "username": "Luis",
-    "password": "admin123"
+        "username": "Luis",
+        "password": "admin123"
     }
     user_login = requests.post(
         f"{url}/auth/login",
@@ -65,7 +65,7 @@ def test_store_orders(setup_orders_postgres):
     files = {'file': open(file_path, 'rb')}
 
     url = config.get_api_url()
-    response = requests.post(f"{url}/orders/file", files=files)
+    response = requests.post(f"{url}/api/orders/file", files=files)
     assert response.status_code == 201
 
 
@@ -79,5 +79,5 @@ def test_add_payer(setup_payers_postgres):
         "city": "Example City",
         "province": "Example Province"
     }
-    response = requests.post(f"{url}/payers", json=json_data)
+    response = requests.post(f"{url}/api/payers", json=json_data)
     assert response.status_code == 201
