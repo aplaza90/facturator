@@ -18,7 +18,7 @@ def get_login_token():
         "password": "admin123"
     }
     user_register = requests.post(
-        f"{url}/signup",
+        f"{url}/auth/signup",
         json=signup_data,
         headers={'Content-Type': 'application/json'}
     )
@@ -28,7 +28,7 @@ def get_login_token():
     "password": "admin123"
     }
     user_login = requests.post(
-        f"{url}/login", 
+        f"{url}/auth/login",
         json=login_data, 
         headers={'Content-Type': 'application/json'}
     )
@@ -47,7 +47,7 @@ def test_protected_resource_valid_token(setup_users_postgres):
     cookies = {
         'token': login_token
     }
-    response = requests.get(f"{url}/protected", cookies=cookies)
+    response = requests.get(f"{url}/auth/protected", cookies=cookies)
     assert response.status_code == 200
 
 
@@ -56,7 +56,7 @@ def test_protected_resource_invalid_token():
     cookies = {
         'token': 'invalid_token'
     }
-    response = requests.get(f"{url}/protected", cookies=cookies)
+    response = requests.get(f"{url}/auth/protected", cookies=cookies)
     assert response.status_code == 401 
 
 

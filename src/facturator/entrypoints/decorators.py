@@ -15,7 +15,7 @@ def token_required(session):
             if not token:
                 return make_response(jsonify({"message": "A valid token is missing!"}), 401)
             try:
-                data = jwt.decode(token, config.get_app_secret_hey(), algorithms=['HS256'])
+                data = jwt.decode(token, config.get_app_secret_key(), algorithms=['HS256'])
                 current_user = session.query(User).filter_by(public_id=data['public_id']).first()
                 if not current_user:
                     return make_response(jsonify({"message": "Invalid token!"}), 401)

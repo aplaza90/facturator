@@ -14,5 +14,6 @@ def get_api_url():
     port = 5005 if host == "localhost" else 80
     return f"http://{host}:{port}"
 
-def get_app_secret_hey():
+
+def get_app_secret_key():
     return 'd9874b1c9d7d19b255c72a8096ecbd331f6885e9'
