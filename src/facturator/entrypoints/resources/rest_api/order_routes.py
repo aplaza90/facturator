@@ -18,7 +18,7 @@ class Order(Resource):
         self.uow = uow
 
     def get(self, item_id):
-        order = handlers.get_order(uow=self.uow, id=item_id)
+        order = handlers.get_order(uow=self.uow, item_id=item_id)
         if order:
             response_data = schemas.OrderItemResponse(**order)
             return make_response(jsonify(response_data.model_dump()), 200)

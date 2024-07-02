@@ -1,6 +1,5 @@
-from flask import Flask, jsonify, request
+from flask import Flask
 from flask_cors import CORS
-from ariadne import QueryType, graphql_sync, make_executable_schema
 
 from facturator.adapters.database import get_sqlalchemy_session
 from facturator.service_layer.unit_of_work import SqlAlchemyUnitOfWork

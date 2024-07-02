@@ -140,7 +140,7 @@ def test_add_order_then_get_it():
     )
     handlers.add_order(cmd, uow)
 
-    retrieved_order = handlers.get_order(uow=uow, id = order_id)
+    retrieved_order = handlers.get_order(uow=uow, item_id= order_id)
     assert retrieved_order.get('number') == "TEST_GET_BY_ID"
 
 
@@ -258,7 +258,7 @@ def test_add_payer_then_get_it():
     )
     handlers.add_payer(cmd=cmd, uow=uow)
 
-    retrieved_payer = handlers.get_payer(uow=uow, id=payer_id)
+    retrieved_payer = handlers.get_payer(uow=uow, item_id=payer_id)
     assert retrieved_payer.get('name') == "TEST_GET_BY_ID"
 
 

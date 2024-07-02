@@ -17,7 +17,7 @@ class Payer(Resource):
         self.uow = uow
 
     def get(self, item_id):
-        payer = handlers.get_payer(uow=self.uow, id=item_id)
+        payer = handlers.get_payer(uow=self.uow, item_id=item_id)
         if payer:
             response_data = schemas.PayerItemResponse(**payer)
             return make_response(jsonify(response_data.model_dump()), 200)

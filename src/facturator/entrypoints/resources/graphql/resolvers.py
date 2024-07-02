@@ -21,7 +21,7 @@ invoice_order_type = ObjectType("InvoiceOrder")
 
 @query.field("getPayer")
 def resolve_get_payer(*_, item_id):
-    payer = handlers.get_payer(uow=uow, id=item_id)
+    payer = handlers.get_payer(uow=uow, item_id=item_id)
     if payer:
         return payer
     return None
@@ -84,7 +84,7 @@ def resolve_delete_payer(*_, item_id):
 
 @query.field("getOrder")
 def resolve_get_order(*_, item_id):
-    order = handlers.get_order(uow=uow, id=item_id, recursive=True)
+    order = handlers.get_order(uow=uow, item_id=item_id, recursive=True)
     if order:
         return order
     return None

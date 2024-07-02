@@ -52,9 +52,9 @@ def get_orders(uow, payer_name, recursive=False):
         return orders
 
 
-def get_order(uow, id, recursive=False):
+def get_order(uow, item_id, recursive=False):
     with uow:
-        order = uow.orders.get_by_id(id)
+        order = uow.orders.get_by_id(item_id)
         if order:
             return (
                 order.to_dict_recursive() if recursive
@@ -137,9 +137,9 @@ def delete_payer(uow, cmd):
         return 'Payer deleted succesfully'
 
 
-def get_payer(uow, id):
+def get_payer(uow, item_id):
     with uow:
-        payer = uow.payers.get_by_id(id)
+        payer = uow.payers.get_by_id(item_id)
         if payer:    
             return payer.to_dict()
         return None 
