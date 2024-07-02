@@ -17,21 +17,21 @@ class Order(Resource):
     def __init__(self, uow: AbstractUnitOfWork):
         self.uow = uow
 
-    def get(self, id):
-        order = handlers.get_order(uow=self.uow, id=id)
+    def get(self, item_id):
+        order = handlers.get_order(uow=self.uow, id=item_id)
         if order:
             response_data = schemas.OrderItemResponse(**order)
             return make_response(jsonify(response_data.model_dump()), 200)
-        abort(404, description=f"Order with ID {id} not found")
+        abort(404, description=f"Order with ID {item_id} not found")
 
-    def patch(self, id):
+    def patch(self, item_id):
         try:
             order_data = schemas.PatchOrder(**request.json)
         except ValidationError as e:
             return {'error': str(e)}, 400
 
         cmd = commands.UpdateOrder(
-            id=id,
+            id=item_id,
             **order_data.model_dump()
         )
         order_dict = handlers.update_order(uow=self.uow, cmd=cmd)
@@ -39,16 +39,16 @@ class Order(Resource):
             response_data = schemas.OrderItemResponse(**order_dict)
             return make_response(jsonify(response_data.model_dump()), 200)
 
-        abort(404, description=f"Payer with ID {id} not found")
+        abort(404, description=f"Payer with ID {item_id} not found")
 
-    def put(self, id):
+    def put(self, item_id):
         try:
             order_data = schemas.PostOrder(**request.json)
         except ValidationError as e:
             return {'error': str(e)}, 400
 
         cmd = commands.UpdateOrder(
-            id=id,
+            id=item_id,
             **order_data.model_dump()
         )
         order_dict = handlers.update_order(uow=self.uow, cmd=cmd)
@@ -57,17 +57,17 @@ class Order(Resource):
             response_data = schemas.OrderItemResponse(**order_dict)
             return make_response(jsonify(response_data.model_dump()), 200)
 
-        abort(404, description=f"Payer with ID {id} not found")
+        abort(404, description=f"Payer with ID {item_id} not found")
 
-    def delete(self, id):
-        cmd = commands.DeleteOrder(id=id)
+    def delete(self, item_id):
+        cmd = commands.DeleteOrder(id=item_id)
         try:
             result = handlers.delete_order(uow=self.uow, cmd=cmd)
         except Exception:
             return 406, "Integrity violation"
 
         if not result:
-            abort(404, description=f"Payer with ID {id} not found")
+            abort(404, description=f"Payer with ID {item_id} not found")
 
         return "", 204
 

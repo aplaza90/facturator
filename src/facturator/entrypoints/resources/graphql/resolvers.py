@@ -20,11 +20,11 @@ invoice_order_type = ObjectType("InvoiceOrder")
 
 
 @query.field("getPayer")
-def resolve_get_payer(*_, id):
-    payer = handlers.get_payer(uow=uow, id=id)
+def resolve_get_payer(*_, item_id):
+    payer = handlers.get_payer(uow=uow, id=item_id)
     if payer:
         return payer
-    raise ItemNotFoundError(f'Product with ID {id} not found')
+    return None
 
 
 @query.field("getPayers")
@@ -50,11 +50,11 @@ def resolve_create_payer(*_, input):
 
 
 @mutation.field("updatePayer")
-def resolve_update_payer(*_, id, input):
+def resolve_update_payer(*_, item_id, input):
     try:
         payer_data = input
         cmd = commands.UpdatePayer(
-            id=id,
+            id=item_id,
             **payer_data
         )
         payer_dict = handlers.update_payer(uow=uow, cmd=cmd)
@@ -62,32 +62,32 @@ def resolve_update_payer(*_, id, input):
         if payer_dict:
             return payer_dict
         
-        raise ItemNotFoundError(f"Payer with ID {id} not found")
+        raise ItemNotFoundError(f"Payer with ID {item_id} not found")
     
     except Exception as e:
-        return f"Error updating payer: {str(e)}"
+        return None
 
 
 @mutation.field("deletePayer")
-def resolve_delete_payer(*_, id):
+def resolve_delete_payer(*_, item_id):
     try:
-        cmd = commands.DeletePayer(id=id)
+        cmd = commands.DeletePayer(id=item_id)
         result = handlers.delete_payer(uow=uow, cmd=cmd)
         if result:
-            return f"Payer with ID {id} deleted successfully"
+            return f"Payer with ID {item_id} deleted successfully"
         
-        raise ItemNotFoundError(f"Payer with ID {id} not found")
+        raise ItemNotFoundError(f"Payer with ID {item_id} not found")
     
     except Exception as e:
         return f"Error deleting payer: {str(e)}"
 
 
 @query.field("getOrder")
-def resolve_get_order(*_, id):
-    order = handlers.get_order(uow=uow, id=id, recursive=True)
+def resolve_get_order(*_, item_id):
+    order = handlers.get_order(uow=uow, id=item_id, recursive=True)
     if order:
         return order
-    raise ItemNotFoundError(f'Product with ID {id} not found')
+    return None
 
 
 @query.field("getOrders")
@@ -111,11 +111,11 @@ def resolve_create_order(*_, input):
 
 
 @mutation.field("updateOrder")
-def resolve_update_order(*_, id, input):
+def resolve_update_order(*_, item_id, input):
     try:
         order_data = input
         cmd = commands.UpdateOrder(
-            id=id,
+            id=item_id,
             **order_data
         )
         order_dict = handlers.update_order(
@@ -125,21 +125,21 @@ def resolve_update_order(*_, id, input):
         if order_dict:
             return order_dict
         
-        raise ItemNotFoundError(f"Payer with ID {id} not found")
+        raise ItemNotFoundError(f"Payer with ID {item_id} not found")
     
     except Exception as e:
-        return f"Error updating payer: {str(e)}"
+        return None
 
 
 @mutation.field("deleteOrder")
-def resolve_delete_order(*_, id):
+def resolve_delete_order(*_, item_id):
     try:
-        cmd = commands.DeleteOrder(id=id)
+        cmd = commands.DeleteOrder(id=item_id)
         result = handlers.delete_order(uow=uow, cmd=cmd)
         if result:
-            return f"Order with ID {id} deleted successfully"
+            return f"Order with ID {item_id} deleted successfully"
         
-        raise ItemNotFoundError(f"Order with ID {id} not found")
+        raise ItemNotFoundError(f"Order with ID {item_id} not found")
     
     except Exception as e:
         return f"Error deleting order: {str(e)}"

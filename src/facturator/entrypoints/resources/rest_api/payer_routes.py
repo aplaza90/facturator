@@ -16,20 +16,20 @@ class Payer(Resource):
     def __init__(self, uow: AbstractUnitOfWork):
         self.uow = uow
 
-    def get(self, id):
-        payer = handlers.get_payer(uow=self.uow, id=id)
+    def get(self, item_id):
+        payer = handlers.get_payer(uow=self.uow, id=item_id)
         if payer:
             response_data = schemas.PayerItemResponse(**payer)
             return make_response(jsonify(response_data.model_dump()), 200)
-        abort(404, description=f"Payer with ID {id} not found")
+        abort(404, description=f"Payer with ID {item_id} not found")
 
-    def patch(self, id):
+    def patch(self, item_id):
         try:
             payer_data = schemas.PatchPayer(**request.json)
         except ValidationError as e:
             return {'error': str(e)}, 400
         cmd = commands.UpdatePayer(
-            id=id,
+            id=item_id,
             **payer_data.model_dump()
         )
         payer_dict = handlers.update_payer(self.uow, cmd)
@@ -38,16 +38,16 @@ class Payer(Resource):
             response_data = schemas.PayerItemResponse(**payer_dict)
             return make_response(jsonify(response_data.model_dump()), 200)
 
-        abort(404, description=f"Payer with ID {id} not found")
+        abort(404, description=f"Payer with ID {item_id} not found")
 
-    def put(self, id):
+    def put(self, item_id):
         try:
             payer_data = schemas.PostPayer(**request.json)
         except ValidationError as e:
             return {'error': str(e)}, 400
 
         cmd = commands.UpdatePayer(
-            id=id,
+            id=item_id,
             **payer_data.model_dump()
         )
         payer_dict = handlers.update_payer(self.uow, cmd)
@@ -56,17 +56,17 @@ class Payer(Resource):
             response_data = schemas.PayerItemResponse(**payer_dict)
             return make_response(jsonify(response_data.model_dump()), 200)
 
-        abort(404, description=f"Payer with ID {id} not found")
+        abort(404, description=f"Payer with ID {item_id} not found")
 
-    def delete(self, id):
-        cmd = commands.DeletePayer(id=id)
+    def delete(self, item_id):
+        cmd = commands.DeletePayer(id=item_id)
         try:
             result = handlers.delete_payer(uow=self.uow, cmd=cmd)
         except Exception:
             return "Integrity violation", 406
 
         if not result:
-            abort(404, description=f"Payer with ID {id} not found")
+            abort(404, description=f"Payer with ID {item_id} not found")
 
         return "", 204
 

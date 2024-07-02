@@ -10,9 +10,9 @@ def create_api_blueprint(uow: AbstractUnitOfWork):
     api_bp = Blueprint('rest_api', __name__)
     api = Api(api_bp)
 
-    api.add_resource(Payer, '/payers/<id>', resource_class_kwargs={'uow': uow})
+    api.add_resource(Payer, '/payers/<item_id>', resource_class_kwargs={'uow': uow})
     api.add_resource(Payers, '/payers', resource_class_kwargs={'uow': uow})
-    api.add_resource(Order, '/orders/<id>', resource_class_kwargs={'uow': uow})
+    api.add_resource(Order, '/orders/<item_id>', resource_class_kwargs={'uow': uow})
     api.add_resource(Orders, '/orders', resource_class_kwargs={'uow': uow})
     api.add_resource(OrdersFile, '/orders/file', resource_class_kwargs={'uow': uow})
     api.add_resource(Invoices, '/invoices', resource_class_kwargs={'uow': uow})

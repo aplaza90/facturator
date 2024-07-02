@@ -52,17 +52,17 @@ input UpdateOrderInput {
 
 
 type Query {
-  getPayer(id: ID!): Payer
+  getPayer(item_id: ID!): Payer
   getPayers(name: String): [Payer!]!
-  getOrder(id: ID!): Order
+  getOrder(item_id: ID!): Order
   getOrders(payer_name: String): [Order!]!
 }
 
 type Mutation {
   createPayer(input: CreatePayerInput!): Payer
-  updatePayer(id: ID!, input: UpdatePayerInput!): Payer
-  deletePayer(id: ID!): String
+  updatePayer(item_id: ID!, input: UpdatePayerInput!): Payer
+  deletePayer(item_id: ID!): String
   createOrder(input: CreateOrderInput!): Order
-  updateOrder(id: ID!, input: UpdateOrderInput!): Order
-  deleteOrder(id: ID!): String
+  updateOrder(item_id: ID!, input: UpdateOrderInput!): Order
+  deleteOrder(item_id: ID!): String
 }
