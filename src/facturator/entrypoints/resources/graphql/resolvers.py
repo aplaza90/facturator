@@ -81,6 +81,7 @@ def resolve_delete_payer(*_, id):
     except Exception as e:
         return f"Error deleting payer: {str(e)}"
 
+
 @query.field("getOrder")
 def resolve_get_order(*_, id):
     order = handlers.get_order(uow=uow, id=id, recursive=True)
@@ -95,6 +96,53 @@ def resolve_get_orders(*_, payer_name=None):
     return orders
 
 
+@mutation.field("createOrder")
+def resolve_create_order(*_, input):
+    order_id = str(uuid.uuid4())
+    cmd = commands.AddOrder(
+        id=order_id,
+        payer_name=input.get('payer_name'),
+        date=input.get('date'),
+        quantity=input.get('quantity'),
+        number=input.get('number')
+    )
+    order = handlers.add_order(cmd=cmd, uow=uow, recursive=True)
+    return order
+
+
+@mutation.field("updateOrder")
+def resolve_update_order(*_, id, input):
+    try:
+        order_data = input
+        cmd = commands.UpdateOrder(
+            id=id,
+            **order_data
+        )
+        order_dict = handlers.update_order(
+            uow=uow, cmd=cmd, recursive=True
+        )
+
+        if order_dict:
+            return order_dict
+        
+        raise ItemNotFoundError(f"Payer with ID {id} not found")
+    
+    except Exception as e:
+        return f"Error updating payer: {str(e)}"
+
+
+@mutation.field("deleteOrder")
+def resolve_delete_order(*_, id):
+    try:
+        cmd = commands.DeleteOrder(id=id)
+        result = handlers.delete_order(uow=uow, cmd=cmd)
+        if result:
+            return f"Order with ID {id} deleted successfully"
+        
+        raise ItemNotFoundError(f"Order with ID {id} not found")
+    
+    except Exception as e:
+        return f"Error deleting order: {str(e)}"
 
 
 schema_path = Path(__file__).parent / "schema.graphql"

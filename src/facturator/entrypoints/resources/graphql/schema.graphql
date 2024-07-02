@@ -29,17 +29,24 @@ input UpdatePayerInput {
 
 type Order {
   id: ID!
-  payerName: String!
+  payer_name: String!
   date: String!
-  quantity: Int!
+  quantity: Float!
   number: String
   payer: Payer
 }
 
-input OrderInput {
-  payerName: String!
+input CreateOrderInput {
+  payer_name: String!
   date: String!
-  quantity: Int!
+  quantity: Float!
+  number: String
+}
+
+input UpdateOrderInput {
+  payer_name: String
+  date: String
+  quantity: Float
   number: String
 }
 
@@ -55,7 +62,7 @@ type Mutation {
   createPayer(input: CreatePayerInput!): Payer
   updatePayer(id: ID!, input: UpdatePayerInput!): Payer
   deletePayer(id: ID!): String
-  createOrder(input: OrderInput!): Order
-  updateOrder(id: ID!, input: OrderInput!): Order
+  createOrder(input: CreateOrderInput!): Order
+  updateOrder(id: ID!, input: UpdateOrderInput!): Order
   deleteOrder(id: ID!): String
 }

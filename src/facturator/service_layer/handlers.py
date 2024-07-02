@@ -6,6 +6,7 @@ from facturator.service_layer.invoice_generator import invoice
 def add_order(
         cmd: commands.AddOrder,
         uow,
+        recursive=False
 ) -> None:
     with uow:
 
@@ -23,7 +24,9 @@ def add_order(
         order.allocate_payer(payer)
         uow.orders.add(order)
         uow.commit()
-        return order.to_dict()
+        return (
+            order.to_dict_recursive() if recursive else order.to_dict()
+        )
 
 
 def get_orders(uow, payer_name, recursive=False):
@@ -60,7 +63,7 @@ def get_order(uow, id, recursive=False):
         return None
 
 
-def update_order(uow, cmd):
+def update_order(uow, cmd, recursive=False):
     with uow:
         order = uow.orders.get_by_id(cmd.id)
         if not order:
@@ -74,7 +77,10 @@ def update_order(uow, cmd):
         order.number = cmd.number if cmd.number else order.number
         uow.commit()
 
-        return order.to_dict()
+        return (
+                order.to_dict_recursive() if recursive
+                else order.to_dict()
+            )
 
 
 def delete_order(uow, cmd):
