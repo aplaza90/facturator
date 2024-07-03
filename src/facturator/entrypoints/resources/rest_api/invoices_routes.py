@@ -27,7 +27,7 @@ class Pdf(Resource):
         number = request.args.get('number')
         context = handlers.get_order_context(uow=self.uow, order_number=number)
 
-        pdf_dir = Path(__file__).resolve().parent.parent / 'service_layer' / 'invoice_generator'
+        pdf_dir = Path(__file__).resolve().parent.parent.parent.parent / 'service_layer' / 'invoice_generator'
         pdf_filename = f'{context["client_name"]}_{context["invoice_date"]}.pdf'
         pdf_path = os.path.join(pdf_dir, pdf_filename)
 
