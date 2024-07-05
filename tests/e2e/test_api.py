@@ -1,6 +1,5 @@
-import requests
 from pathlib import Path
-import jwt
+import requests
 
 from facturator import config
 
