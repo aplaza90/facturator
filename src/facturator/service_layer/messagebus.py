@@ -32,7 +32,6 @@ def handle(
 
 def handle_event(
         event: events.Event,
-        queue: List[Message],
         uow: unit_of_work.AbstractUnitOfWork,
 ):
     for handler in EVENT_HANDLERS[type(event)]:
@@ -67,4 +66,3 @@ COMMAND_HANDLERS = {
     commands.AddOrder: handlers.add_order,
     commands.UploadOrders: handlers.upload_payment_orders_from_file,
 }
-
