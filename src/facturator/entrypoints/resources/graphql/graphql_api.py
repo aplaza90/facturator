@@ -1,8 +1,9 @@
 from flask import Blueprint, jsonify, request
 from ariadne import graphql_sync
+from facturator.service_layer.unit_of_work import AbstractUnitOfWork
 from .resolvers import explorer_html, schema
 
-def create_gql_api_blueprint(uow):
+def create_gql_api_blueprint(uow: AbstractUnitOfWork):
     graphql_bp = Blueprint('graphql_bp', __name__)
 
 

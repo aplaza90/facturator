@@ -8,7 +8,7 @@ from facturator.entrypoints.resources.auth.auth_routes import auth_bp
 from facturator.entrypoints.resources.rest_api.swagger import create_swagger_blueprint
 from facturator.entrypoints.resources.graphql.graphql_api import create_gql_api_blueprint
 
-app = Flask(__name__, template_folder='templates')
+app = Flask(__name__)
 CORS(app)
 
 uow=SqlAlchemyUnitOfWork(get_sqlalchemy_session)
