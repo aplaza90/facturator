@@ -62,8 +62,8 @@ class Payer(Resource):
         cmd = commands.DeletePayer(id=item_id)
         try:
             result = handlers.delete_payer(uow=self.uow, cmd=cmd)
-        except Exception:
-            return "Integrity violation", 406
+        except Exception as e:
+            return f"Integrity violation {e}", 406
 
         if not result:
             abort(404, description=f"Payer with ID {item_id} not found")
