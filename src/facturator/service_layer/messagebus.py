@@ -1,5 +1,5 @@
 import logging
-from typing import List, Dict, Callable, Type, Union, TYPE_CHECKING
+from typing import Union, TYPE_CHECKING
 
 from facturator.domain import commands, events
 from facturator.service_layer import handlers, unit_of_work
@@ -20,27 +20,12 @@ def handle(
     queue = [message]
     while queue:
         message = queue.pop(0)
-        if isinstance(message, events.Event):
-            handle_event(message, uow)
-        elif isinstance(message, commands.Command):
+        if isinstance(message, commands.Command):
             cmd_output = handle_command(message, uow)
             results.append(cmd_output)
         else:
-            raise Exception(f"{message} is not event or command")
+            raise Exception(f"{message} is not a command")
     return results
-
-
-def handle_event(
-        event: events.Event,
-        uow: unit_of_work.AbstractUnitOfWork,
-):
-    for handler in EVENT_HANDLERS[type(event)]:
-        try:
-            logger.debug("Handling event {}".format(event))
-            handler(event, uow=uow)
-        except Exception:
-            logger.exception("something happened while handling {}".format(event))
-            continue
 
 
 def handle_command(
@@ -56,9 +41,6 @@ def handle_command(
         logger.exception("Exception happened while handling {}".format(command))
         raise
 
-
-EVENT_HANDLERS = {
-}
 
 
 COMMAND_HANDLERS = {
